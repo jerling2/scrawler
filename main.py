@@ -3,7 +3,7 @@ import logfire
 from dotenv import load_dotenv
 from source import System
 
-def main():
+def main(selection=None):
     load_dotenv()
     logfire_options = logfire.ConsoleOptions(
         show_project_link=False     #< suppresse the "Logfire project URL: ..." message
@@ -12,7 +12,7 @@ def main():
     logfire.instrument_pydantic_ai()
     program = System()
     try:
-        program.interact()
+        program.interact(selection=selection)
     except KeyboardInterrupt:
         print('\nGoodbye!')
     except Exception as e:
@@ -20,4 +20,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(1)
