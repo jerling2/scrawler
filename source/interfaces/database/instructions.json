@@ -1,0 +1,80 @@
+{
+    "options": [
+        "create collection",
+        "list collections",
+        "describe collection",
+        "drop collection",
+        "LIMIT Query a Collection"
+    ],
+    "collection_schemas": [
+        {
+            "name": "app.joinhandshake.com",
+            "fields": {
+                "entity_id": {
+                    "datatype": "INT64",
+                    "is_primary": true,
+                    "auto_id": true
+                },
+                "job_id": {
+                    "datatype": "INT64"
+                },
+                "chunk_id": {
+                    "datatype": "INT64"
+                },
+                "chunk": {
+                    "datatype": "VARCHAR",
+                    "max_length": 1024
+                },
+                "href": {
+                    "datatype": "VARCHAR",
+                    "max_length": 512
+                },
+                "company": {
+                    "datatype": "VARCHAR",
+                    "max_length": 512
+                },
+                "position": {
+                    "datatype": "VARCHAR",
+                    "max_length": 512
+                },
+                "pay": {
+                    "datatype": "VARCHAR",
+                    "max_length": 512
+                },
+                "type":  {
+                    "datatype": "VARCHAR",
+                    "max_length": 512
+                },
+                "duration":  {
+                    "datatype": "VARCHAR",
+                    "max_length": 512
+                },
+                "location":  {
+                    "datatype": "VARCHAR",
+                    "max_length": 512
+                },
+                "deadline":  {
+                    "datatype": "VARCHAR",
+                    "max_length": 512
+                },
+                "apply_type":  {
+                    "datatype": "VARCHAR",
+                    "max_length": 512
+                },
+                "summary_vector": {
+                    "datatype": "FLOAT_VECTOR",
+                    "dim": 768
+                }
+            },
+            "indices": {
+                "job_id": {
+                    "index_type": "AUTOINDEX"
+                },
+                "summary_vector": {
+                    "index_type": "AUTOINDEX",
+                    "metric_type": "COSINE"
+                }
+            }
+        }
+    ]
+}
