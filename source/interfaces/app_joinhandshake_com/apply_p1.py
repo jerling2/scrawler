@@ -1,6 +1,6 @@
 from typing import Any
 from .utils import wait_to_be_visible_or_retry
-from source import AuthAgent, Serializer
+from source import AuthAgent, Writer
 import json
 import os
 import re
@@ -22,6 +22,7 @@ from playwright.async_api import (
     BrowserContext,
     expect
 )
+
 
 SAVE_FREQUENCY = 1 # flush buffer after # requests
 
@@ -100,19 +101,19 @@ async def extract_relevant_jobs(start: int, end: int, per_page: int):
         RELEVANT_JOB_URL.format(page=page, per_page=per_page)
         for page in range(start, end + 1)
     ]
-    serializer = Serializer(serialize, storage / 'p1.csv')
+    writer = Writer(serialize, storage / 'p1.csv')
     crawler = AsyncWebCrawler(config=browswer_config)
     crawler.crawler_strategy.set_hook("after_goto", after_goto)
     async with AuthAgent(url=LOGIN_URL) as auth:
         await auth.login()
     await crawler.start()
-    serializer.start()
+    writer.start()
     async for result in await crawler.arun_many(urls, run_config):
         if not result.success:
             continue
         content = json.loads(result.extracted_content)
-        await serializer.write(content)
-        if serializer.get_buffer_length() >= SAVE_FREQUENCY:
-            serializer.flush()
-    await serializer.close()
+        await writer.write(content)
+        if writer.get_buffer_length() >= SAVE_FREQUENCY:
+            writer.flush()
+    await writer.close()
     await crawler.close()

@@ -1,2 +1,2 @@
 from .authentication.agent import AuthAgent
-from .serializer.serializer import Serializer
+from .serializer.writer import Writer
