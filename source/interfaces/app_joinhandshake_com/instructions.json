@@ -1,0 +1,8 @@
+{
+    "options": [
+        "mass apply"
+    ],
+    "mass_apply_parts": [
+        "extract relevant jobs"
+    ]
+}
