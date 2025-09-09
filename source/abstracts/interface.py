@@ -1,7 +1,11 @@
 class Interface():
     
+    @staticmethod
+    def format_header(header):
+        return f"\x1b[36;1m--  {header} --\x1b[0m"
+
     def prompt_options(self, header, options, registery):
-        options_prompt = f"\x1b[36;1m--  {header} --\x1b[0m\n"
+        options_prompt = self.format_header(header) + "\n"
         for i, option in enumerate(options):
             options_prompt += "  "                                #< Add indent
             if option not in registery:

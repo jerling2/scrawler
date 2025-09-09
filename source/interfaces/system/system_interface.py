@@ -1,10 +1,11 @@
 from pathlib import Path
 import json
 from source.abstracts import Interface
-from source.interfaces import Database
+from source.interfaces import Database, Handshake
 
 OPTIONS_REGISTRY = {
-    "database": Database
+    "database": Database,
+    "app.joinhandshake.com": Handshake
 }
 
 class System(Interface):

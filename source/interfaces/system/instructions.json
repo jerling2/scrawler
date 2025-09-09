@@ -1,5 +1,6 @@
 {
     "options": [
-        "database"
+        "database",
+        "app.joinhandshake.com"
     ]
 }
