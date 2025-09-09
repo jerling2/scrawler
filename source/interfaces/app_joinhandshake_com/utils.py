@@ -5,6 +5,7 @@ from playwright.async_api import (
     expect
 )
 
+
 async def wait_to_be_visible_or_retry(page: Page, locator: Locator, timeout=30_000, max_retries=5):
     attempts = 0
     while attempts < max_retries:

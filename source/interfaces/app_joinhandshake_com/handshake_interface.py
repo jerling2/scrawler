@@ -4,6 +4,7 @@ from pathlib import Path
 from source.abstracts import Interface
 from .apply_p1 import extract_relevant_jobs
 
+
 class Handshake(Interface):
     
     def __init__(self):
