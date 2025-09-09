@@ -1,6 +1,6 @@
 from .utilities import (
     AuthAgent,
-    Serializer
+    Writer
 )
 from .interfaces import (
     System

@@ -5,7 +5,7 @@ import csv
 import asyncio
 
 
-class Serializer:
+class Writer:
 
     def __init__(self, serialize: Callable[[list[Any]], list[list[str]]], path: Path):
         self.serialize = serialize
