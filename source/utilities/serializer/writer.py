@@ -5,6 +5,7 @@ import csv
 import io
 import asyncio
 import aiofiles
+import traceback
 
 
 class Writer:
@@ -64,9 +65,15 @@ class Writer:
             if not len(self.buffer):
                 continue
             async with self.write_lock:
-                serialized_buffer = self.serialize(self.buffer)
-                self.buffer = []
+                try:
+                    serialized_buffer = self.serialize(self.buffer)
+                except Exception as e:
+                    traceback.print_exc()
+                    print(f'\x1b[31mSerialize error: {e!r}\x1b[0m')
+                    continue
+                finally:
+                    self.buffer = []
+                    self.buffer_empty_event.set()
             csv_data = await asyncio.to_thread(self._to_csv, serialized_buffer)
             async with aiofiles.open(self.file, "a", newline="", encoding="utf-8") as f:
                 await f.write(csv_data)
-            self.buffer_empty_event.set()

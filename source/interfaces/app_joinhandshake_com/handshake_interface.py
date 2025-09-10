@@ -3,6 +3,7 @@ import asyncio
 from pathlib import Path
 from source.abstracts import Interface
 from .apply_p1 import extract_relevant_jobs
+from .apply_p2 import add_job_details
 
 
 class Handshake(Interface):
@@ -28,7 +29,8 @@ class Handshake(Interface):
 
     def mass_apply(self):
         PARTS_REGISTRY = {
-            'extract relevant jobs': self.mass_apply_p1
+            'extract relevant jobs': self.mass_apply_p1,
+            'add job details': self.mass_apply_p2
         }
         parts = self.instructions['mass_apply_parts']
         if not parts:
@@ -51,3 +53,7 @@ class Handshake(Interface):
         except KeyboardInterrupt:
             return print()
         asyncio.run(extract_relevant_jobs(start, end, per_page))
+
+    def mass_apply_p2(self):
+        print(self.format_header("RUNNING app.joinhandshake.com > Mass Apply > p2"))
+        asyncio.run(add_job_details())
