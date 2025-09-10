@@ -2,7 +2,9 @@ from collections.abc import Callable
 from typing import Any, Optional
 from pathlib import Path
 import csv
+import io
 import asyncio
+import aiofiles
 
 
 class Writer:
@@ -41,6 +43,16 @@ class Writer:
     def get_buffer_length(self):
         return len(self.buffer)
   
+    def _to_csv(self, serialized_buffer: list[list[str]]) -> str: 
+        """
+        `csv.writer.writerows` is blocking, so the output is returned as a
+        string so it can be written in a thread without blocking the event loop
+        """
+        output = io.StringIO() #< file-like object in memory (not disk)
+        writer = csv.writer(output)
+        writer.writerows(serialized_buffer)
+        return output.getvalue()
+
     async def _run(self):
         while self.is_running:
             await self.write_event.wait()
@@ -50,6 +62,6 @@ class Writer:
             async with self.write_lock:
                 serialized_buffer = self.serialize(self.buffer)
                 self.buffer = []
-            with open(self.file, "a", newline="", encoding="utf-8") as f:
-                writer = csv.writer(f)
-                writer.writerows(serialized_buffer)
+            csv_data = await asyncio.to_thread(self._to_csv, serialized_buffer)
+            async with aiofiles.open(self.file, "a", newline="", encoding="utf-8") as f:
+                await f.write(csv_data)
