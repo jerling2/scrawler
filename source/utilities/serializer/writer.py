@@ -45,8 +45,8 @@ class Writer:
   
     def _to_csv(self, serialized_buffer: list[list[str]]) -> str: 
         """
-        `csv.writer.writerows` is blocking, so the output is returned as a
-        string so it can be written in a thread without blocking the event loop
+        csv.writer() and csv.writer().writerows are offloaded to its own thread,
+        otherwise they will stall the entire event loop.
         """
         output = io.StringIO() #< file-like object in memory (not disk)
         writer = csv.writer(output)
