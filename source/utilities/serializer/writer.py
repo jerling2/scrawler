@@ -12,6 +12,7 @@ class Writer:
     def __init__(self, serialize: Callable[[list[Any]], list[list[str]]], path: Path):
         self.serialize = serialize
         self.file = path
+        self.buffer_empty_event = asyncio.Event()
         self.write_event = asyncio.Event()
         self.write_lock = asyncio.Lock()
         self.is_running = False
@@ -29,6 +30,8 @@ class Writer:
     async def close(self):
         if not self.is_running:
             return
+        self.flush()
+        await self.buffer_empty_event.wait()
         self.is_running = False
         self.flush()
         await self.worker
@@ -36,6 +39,7 @@ class Writer:
     async def write(self, data: list[Any]):
         async with self.write_lock:
             self.buffer.extend(data)
+            self.buffer_empty_event.clear()
     
     def flush(self):
         self.write_event.set()
@@ -65,3 +69,4 @@ class Writer:
             csv_data = await asyncio.to_thread(self._to_csv, serialized_buffer)
             async with aiofiles.open(self.file, "a", newline="", encoding="utf-8") as f:
                 await f.write(csv_data)
+            self.buffer_empty_event.set()
