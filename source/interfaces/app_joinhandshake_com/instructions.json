@@ -3,6 +3,7 @@
         "mass apply"
     ],
     "mass_apply_parts": [
-        "extract relevant jobs"
+        "extract relevant jobs",
+        "add job details"
     ]
 }
