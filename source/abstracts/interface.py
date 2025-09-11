@@ -1,8 +1,30 @@
+from functools import wraps
+
+
 class Interface():
     
     @staticmethod
     def format_header(header):
         return f"\x1b[36;1m--  {header} --\x1b[0m"
+
+    @staticmethod
+    def main_page(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            while True:
+                func(*args, **kwargs)
+        return wrapper
+
+    @staticmethod
+    def sub_page(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            while True:
+                try:
+                    func(*args, **kwargs)
+                except KeyboardInterrupt:
+                    return print()
+        return wrapper
 
     def prompt_options(self, header, options, registery):
         options_prompt = self.format_header(header) + "\n"

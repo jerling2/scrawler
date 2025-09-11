@@ -1,8 +1,8 @@
 {
     "options": [
-        "mass apply"
+        "apply"
     ],
-    "mass_apply_parts": [
+    "apply_parts": [
         "extract relevant jobs",
         "add job details",
         "filter jobs with keywords & llm"
