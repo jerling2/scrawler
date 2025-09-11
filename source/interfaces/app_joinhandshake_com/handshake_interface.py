@@ -4,6 +4,7 @@ from pathlib import Path
 from source.abstracts import Interface
 from .apply_p1 import extract_relevant_jobs
 from .apply_p2 import add_job_details
+from .apply_p3 import filter_jobs
 
 
 class Handshake(Interface):
@@ -30,7 +31,8 @@ class Handshake(Interface):
     def mass_apply(self):
         PARTS_REGISTRY = {
             'extract relevant jobs': self.mass_apply_p1,
-            'add job details': self.mass_apply_p2
+            'add job details': self.mass_apply_p2,
+            'filter jobs with keywords & llm': self.mass_apply_p3
         }
         parts = self.instructions['mass_apply_parts']
         if not parts:
@@ -57,3 +59,7 @@ class Handshake(Interface):
     def mass_apply_p2(self):
         print(self.format_header("RUNNING app.joinhandshake.com > Mass Apply > p2"))
         asyncio.run(add_job_details())
+
+    def mass_apply_p3(self):
+        print(self.format_header("RUNNING app.joinhandshake.com > Mass Apply > p3"))
+        asyncio.run(filter_jobs())
