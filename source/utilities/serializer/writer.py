@@ -19,6 +19,7 @@ class Writer:
         self.is_running = False
         self.buffer: list[Any] = []
         self.worker: Optional[asyncio.Task[None]] = None
+        self.num_lines: int = 0
 
     def start(self):
         if self.is_running:
@@ -47,6 +48,9 @@ class Writer:
 
     def get_buffer_length(self):
         return len(self.buffer)
+
+    def get_num_lines_written(self):
+        return self.num_lines
   
     def _to_csv(self, serialized_buffer: list[list[str]]) -> str: 
         """
@@ -63,6 +67,7 @@ class Writer:
             await self.write_event.wait()
             self.write_event.clear()
             if not len(self.buffer):
+                self.buffer_empty_event.set()
                 continue
             async with self.write_lock:
                 try:
@@ -77,3 +82,4 @@ class Writer:
             csv_data = await asyncio.to_thread(self._to_csv, serialized_buffer)
             async with aiofiles.open(self.file, "a", newline="", encoding="utf-8") as f:
                 await f.write(csv_data)
+                self.num_lines += len(serialized_buffer)
