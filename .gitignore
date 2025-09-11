@@ -1,6 +1,10 @@
 # Docker Volumes
 volumes/
 
+# Sensitive Session Storage
+sessions/
+!sessions/README.md
+
 # Ignore Sensitive Scrapped Data
 storage/
 !storage/README.md
