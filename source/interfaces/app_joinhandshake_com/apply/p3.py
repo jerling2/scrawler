@@ -1,47 +1,21 @@
 from dataclasses import dataclass
 from typing import Any
-from .utils import wait_to_be_visible_or_retry
 from source import (
     AuthAgent, 
     Writer, 
     Reader, 
-    normalize_markdown
 )
-from datetime import (
-    datetime, 
-    timedelta
-)
-from dateutil.relativedelta import relativedelta
 import json
 import os
-import re
-import traceback
 import asyncio
 from aiolimiter import AsyncLimiter
 from pathlib import Path
-from crawl4ai import (
-    AsyncWebCrawler,
-    CrawlerRunConfig,
-    BrowserConfig, 
-    JsonCssExtractionStrategy,
-    CacheMode,
-    DefaultMarkdownGenerator,
-    BM25ContentFilter,
-    MemoryAdaptiveDispatcher,
-    RateLimiter,
-    CrawlResult
-)
-from playwright.async_api import (
-    Page,
-    Locator,
-    BrowserContext,
-    expect
-)
 from pydantic_ai import Agent
 from pydantic_ai.usage import RunUsage
 from pydantic_ai.models.openai import OpenAIChatModel
 from rich.console import Console
 from rich.table import Table
+from ..pages.job_details import deserialize
 
 
 # -- GPT 4.1 -- #
@@ -68,15 +42,6 @@ RATE_LIMIT = int(min(
 ))
 
 BATCH_SIZE = 1000
-
-
-
-def deserialize(row: list[str]) -> list[dict[str, Any]]:
-    return {
-        'job_id': row[0], 'position': row[1], 'url': row[2], 'additional_documents': json.loads(row[3]), 'company': row[4],        
-        'is_external_application': json.loads(row[5]), 'industry': row[6], 'posted_date': row[7], 'deadline': row[8], 'pay': row[9],
-        'is_internship': json.loads(row[10]), 'type': row[11], 'duration': row[12], 'location': row[13], 'overview': json.loads(row[14]),
-    }
 
 
 def serialize(buffer: list[Any]) -> list[str]:

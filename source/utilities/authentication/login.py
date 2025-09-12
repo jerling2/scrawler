@@ -38,7 +38,7 @@ class LoginProcedures:
         async def on_page_context_created(page: Page, context: BrowserContext, **kwargs):
             print("\x1b[36m[AUTH].... \u2192 Checking credentials\x1b[0m")
             await page.goto('https://uoregon.joinhandshake.com/login')
-            if page.url == 'https://uoregon.joinhandshake.com/explore':
+            if '/explore' in page.url:
                 print(f"\x1b[1;93m[SUCCESS]\x1b[0m")
                 return page
             await page.locator(".sso-button").click()

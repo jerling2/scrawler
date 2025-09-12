@@ -13,10 +13,8 @@ def main(selection=None):
     program = System()
     try:
         program.interact(selection=selection)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, EOFError):
         print('\nGoodbye!')
-    except Exception as e:
-        print(e)
 
 
 if __name__ == "__main__":

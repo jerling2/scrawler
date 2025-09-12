@@ -25,7 +25,6 @@ class Handshake(Interface):
         selection = self.prompt_options("app.joinhandshake.com (^C to exit)", options, OPTIONS_REGISTRY)
         method_name = options[selection-1]
         method = OPTIONS_REGISTRY.get(method_name, None)
-        print(method)
         if not method:
             raise Exception(f"\x1b[1mInterface.Handshake: method {method_name!r} is not registered\x1b[0m")
         method()
@@ -56,7 +55,7 @@ class Handshake(Interface):
             per_page = self.prompt_int('\x1b[35;1mEnter jobs per page (e.g. 50): \x1b[0m', min_range=1, max_range=50)
         except KeyboardInterrupt:
             return print()
-            asyncio.run(extract_relevant_jobs(start, end, per_page))
+        asyncio.run(extract_relevant_jobs(start, end, per_page))
 
     def apply_p2(self):
         print(self.format_header("RUNNING app.joinhandshake.com > apply > p2"))
