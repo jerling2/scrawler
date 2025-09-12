@@ -46,8 +46,9 @@ class Writer:
     def flush(self):
         self.write_event.set()
 
-    def get_buffer_length(self):
-        return len(self.buffer)
+    async def get_buffer_length(self):
+        async with self.write_lock:
+            return len(self.buffer)
 
     def get_num_lines_written(self):
         return self.num_lines
@@ -66,9 +67,6 @@ class Writer:
         while self.is_running:
             await self.write_event.wait()
             self.write_event.clear()
-            if not len(self.buffer):
-                self.buffer_empty_event.set()
-                continue
             async with self.write_lock:
                 try:
                     serialized_buffer = self.serialize(self.buffer)
