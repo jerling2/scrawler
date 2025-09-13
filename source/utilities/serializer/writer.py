@@ -10,9 +10,9 @@ import traceback
 
 class Writer:
 
-    def __init__(self, serialize: Callable[[list[Any]], list[list[str]]], path: Path):
+    def __init__(self, file: Path, serialize: Callable[[list[Any]], list[list[str]]]):
         self.serialize = serialize
-        self.file = path
+        self.file = file
         self.buffer_empty_event = asyncio.Event()
         self.write_event = asyncio.Event()
         self.write_lock = asyncio.Lock()
@@ -21,11 +21,14 @@ class Writer:
         self.worker: Optional[asyncio.Task[None]] = None
         self.num_lines: int = 0
 
-    def start(self):
+    def start(self, overwrite=True):
         if self.is_running:
             return
-        self.file.unlink(missing_ok=True)
-        self.file.touch(exist_ok=True)
+        if overwrite:
+            self.file.unlink(missing_ok=True)
+            self.file.touch(exist_ok=True)
+        elif not self.file.exists():
+            raise Exception(f'{self.file!r} does not exist')
         self.is_running = True
         self.worker = asyncio.create_task(self._run())
 
