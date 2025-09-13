@@ -118,7 +118,7 @@ async def job_search(state: JobSearchState) -> None:
         cache_mode=CacheMode.BYPASS,
     )
 
-    writer = Writer(serialize, state.file)
+    writer = Writer(state.file, serialize)
     crawler = AsyncWebCrawler(config=browswer_config)
     crawler.crawler_strategy.set_hook("after_goto", after_goto)
     async with AuthAgent(url=LOGIN_URL) as auth:

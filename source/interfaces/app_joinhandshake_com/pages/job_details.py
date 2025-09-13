@@ -252,7 +252,7 @@ def serialize(buffer: list[Any]) -> list[str]:
     return serialized_buffer
 
 
-def deserialize(row: list[str]) -> list[dict[str, Any]]:
+def deserialize(row: list[str]) -> dict[str, Any]:
     return {
         'job_id': row[0], 'position': row[1], 'url': row[2], 'additional_documents': json.loads(row[3]), 'company': row[4],        
         'is_external_application': json.loads(row[5]), 'industry': row[6], 'posted_date': row[7], 'deadline': row[8], 'pay': row[9],
@@ -295,7 +295,7 @@ async def job_details(state: JobDetailsState) -> None:
         markdown_generator=DefaultMarkdownGenerator()
     )
     reader = Reader(state.file_input, state.batch_size, state.deserialize)
-    writer = Writer(serialize, state.file_output)
+    writer = Writer(state.file_output, serialize)
     crawler = AsyncWebCrawler(config=browswer_config)
     crawler.crawler_strategy.set_hook("after_goto", after_goto)
     async with AuthAgent(url=LOGIN_URL) as auth:
