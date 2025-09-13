@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from collections.abc import Callable
 from typing import Any, Optional
-from ..utilities.utils import wait_to_be_visible_or_retry
+from ..utilities.playwright_tools import wait_to_be_visible_or_retry
 from source import (
     AuthAgent, 
     Writer, 
@@ -45,7 +45,6 @@ CACHE_FILE = Path(os.getenv("STORAGE")) / "cache" / "app_joinhandshake_com" / "j
 if not CACHE_FILE.exists():
     CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
     CACHE_FILE.touch(exist_ok=True)
-
 
 LOGIN_URL = "https://uoregon.joinhandshake.com"
 
@@ -229,24 +228,6 @@ def clean_extracted_content(content: dict[str, Any]):
     })
 
 
-def clean_and_serialize(buffer: list[Any]) -> list[str]:
-    serialized_buffer = []
-    for item in buffer:
-        try:
-            clean_extracted_content(item)
-        except:
-            raise Exception(json.dumps(item, indent=4))
-        serialized_buffer.append([
-            item['job_id'], item['position'], item['url'],
-            json.dumps(item['additional_documents']), item['company'],
-            json.dumps(item['is_external_application']), item['industry'],
-            item['posted_date'], item['deadline'], item['pay'],
-            json.dumps(item['is_internship']), item['type'], item['duration'],
-            item['location'], json.dumps(item['overview']),
-        ])
-    return serialized_buffer
-
-
 def serialize(buffer: list[Any]) -> list[str]:
     serialized_buffer = []
     for item in buffer:
@@ -359,3 +340,4 @@ async def job_details(state: JobDetailsState) -> None:
     await writer.close()
     await cache.close_write()
     await crawler.close()
+    

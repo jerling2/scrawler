@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Any, Optional
-from ..utilities.utils import wait_to_be_visible_or_retry
+from ..utilities.playwright_tools import wait_to_be_visible_or_retry
 from source import AuthAgent, Writer
 import json
 import os
@@ -63,11 +63,13 @@ RELEVANT_JOB_HTML_SCHEMA = \
 }
 """
 
+
 async def after_goto(page: Page, context: BrowserContext, url: str, response, **kwargs):
     locator = page.get_by_role("button", name=re.compile(r"View.*"))
     url_pattern=r'^.*/job-search/.*$'
     await wait_to_be_visible_or_retry(page, locator.first, url_pattern=url_pattern)
     return page
+
 
 def serialize(buffer: list[Any]) -> list[str]:
     serialized_buffer = []
@@ -132,6 +134,3 @@ async def job_search(state: JobSearchState) -> None:
             writer.flush()
     await writer.close()
     await crawler.close()
-
-
-__all__ = ["deserialize", "JobSearchState", "job_search"]
