@@ -133,8 +133,8 @@ async def filter_jobs():
     filter_state = SharedFilterState(
         reject_keywords=reject_keywords,
         accept_keywords=accept_keywords,
-        accepted_jobs_writer=Writer(serialize, storage / 'p3_accepted_jobs.csv'),
-        rejected_jobs_writer=Writer(serialize, storage / 'p3_rejected_jobs.csv'),
+        accepted_jobs_writer=Writer(storage / 'p3_accepted_jobs.csv', serialize),
+        rejected_jobs_writer=Writer(storage / 'p3_rejected_jobs.csv', serialize),
         api_usage_lock=asyncio.Lock(),
         api_usage=RunUsage(),
         agent=Agent(MODEL, output_type=bool, system_prompt=system_prompt),
