@@ -1,21 +1,19 @@
+from pathlib import Path
 from dataclasses import dataclass
 from typing import Any
-from source import (
-    AuthAgent, 
-    Writer, 
-    Reader, 
-)
 import json
 import os
 import asyncio
 from aiolimiter import AsyncLimiter
-from pathlib import Path
 from pydantic_ai import Agent
 from pydantic_ai.usage import RunUsage
-from pydantic_ai.models.openai import OpenAIChatModel
 from rich.console import Console
 from rich.table import Table
-from ..pages.job_details import deserialize
+from source.interfaces.app_joinhandshake_com import deserialize_job_details
+from source.utilities import (
+    Writer,
+    Reader,
+)
 
 
 # -- GPT 4.1 -- #
@@ -106,7 +104,7 @@ async def filter_jobs():
     p2_file = storage / 'p2.csv'
     if not p2_file.exists():
         raise Exception(f"add_job_details: {p2_file!r} does not exist. Run part 2 before running part 3.")
-    
+
     reject_keywords = [
         "it ", "designer", "research", "robotic","business", "java ",
         "mobile ", "digital ", ".net", "teacher", "teaching",
@@ -140,8 +138,8 @@ async def filter_jobs():
         agent=Agent(MODEL, output_type=bool, system_prompt=system_prompt),
         api_rate_limiter=AsyncLimiter(max_rate=RATE_LIMIT, time_period=60)
     )
-    
-    reader = Reader(p2_file, BATCH_SIZE, deserialize)
+   
+    reader = Reader(p2_file, BATCH_SIZE, deserialize_job_details)
     filter_state.accepted_jobs_writer.start()
     filter_state.rejected_jobs_writer.start()
     async for batch in reader:
@@ -174,6 +172,6 @@ async def filter_jobs():
     table.add_row("Output Tokens", f'{num_output_tokens} (${output_cost:.4f})')
     table.add_row("Avg TPR", f'{avg_tokens_per_request:.1f}')
     table.add_row("Cost", f'${input_cost + output_cost:.4f}')
-    
+
     console = Console()
     console.print(table)

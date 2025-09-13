@@ -1,42 +1,38 @@
 from dataclasses import dataclass
 from collections.abc import Callable
 from typing import Any, Optional
-from ..utilities.playwright_tools import wait_to_be_visible_or_retry
-from source import (
-    AuthAgent, 
-    Writer, 
-    Reader, 
-    Cache,
-    normalize_markdown
-)
 from datetime import (
-    datetime, 
-    timedelta
+    datetime
 )
-from dateutil.relativedelta import relativedelta
 import json
 import os
 import re
 import traceback
 from pathlib import Path
+from dateutil.relativedelta import relativedelta
 from crawl4ai import (
     AsyncWebCrawler,
     CrawlerRunConfig,
     BrowserConfig, 
     JsonCssExtractionStrategy,
-    CacheMode,
     DefaultMarkdownGenerator,
-    BM25ContentFilter,
-    MemoryAdaptiveDispatcher,
-    RateLimiter,
     CrawlResult
 )
 from playwright.async_api import (
     Page,
-    Locator,
     BrowserContext,
-    expect
 )
+from source.interfaces.app_joinhandshake_com.utilities.playwright_tools import (
+    wait_to_be_visible_or_retry
+)
+from source.utilities import (
+    AuthAgent,
+    Writer,
+    Reader,
+    Cache,
+    normalize_markdown
+)
+
 
 SESSION = Path(os.getenv("SESSION_STORAGE")) / "handshake.json"
 
@@ -183,7 +179,7 @@ def _pay(text: str) -> str:
     else:
         unit = unit_case_two.group(1)
     if unit == 'yr' or unit == 'year':
-        factor = 1 
+        factor = 1
     elif unit == 'mo' or unit == 'month':
         factor = 12
     elif unit == 'wk' or unit == 'week':
@@ -242,7 +238,7 @@ def serialize(buffer: list[Any]) -> list[str]:
     return serialized_buffer
 
 
-def deserialize(row: list[str]) -> dict[str, Any]:
+def deserialize_job_details(row: list[str]) -> dict[str, Any]:
     return {
         'job_id': row[0], 'position': row[1], 'url': row[2], 'additional_documents': json.loads(row[3]), 'company': row[4],        
         'is_external_application': json.loads(row[5]), 'industry': row[6], 'posted_date': row[7], 'deadline': row[8], 'pay': row[9],
@@ -285,7 +281,7 @@ async def job_details(state: JobDetailsState) -> None:
         markdown_generator=DefaultMarkdownGenerator()
     )
     cache = Cache(
-        reader=Reader(CACHE_FILE, 1024, deserialize),
+        reader=Reader(CACHE_FILE, 1024, deserialize_job_details),
         writer=Writer(CACHE_FILE, serialize)
     )
     crawler = AsyncWebCrawler(config=browswer_config)

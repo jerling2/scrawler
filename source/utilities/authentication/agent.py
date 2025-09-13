@@ -1,6 +1,6 @@
 import traceback
 from crawl4ai import BrowserConfig
-from .login import LoginProcedures
+from source.utilities.authentication.login import LoginProcedures
 
 
 class AuthAgent():

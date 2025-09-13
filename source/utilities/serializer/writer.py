@@ -1,11 +1,11 @@
 from collections.abc import Callable
 from typing import Any, Optional
 from pathlib import Path
+import traceback
 import csv
 import io
 import asyncio
 import aiofiles
-import traceback
 
 
 class Writer:

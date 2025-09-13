@@ -2,9 +2,14 @@ import json
 import asyncio
 from pathlib import Path
 from source.abstracts import Interface
-from .apply.p1 import extract_relevant_jobs
-from .apply.p2 import add_job_details
-from .apply.p3 import filter_jobs
+from source.interfaces.app_joinhandshake_com.apply import (
+    extract_relevant_jobs,
+    add_job_details,
+    filter_jobs
+)
+from source.interfaces.app_joinhandshake_com.rag import (
+    rag_test
+)
 
 
 class Handshake(Interface):
@@ -17,7 +22,8 @@ class Handshake(Interface):
     @Interface.main_page
     def interact(self):
         OPTIONS_REGISTRY = {
-            'apply': self.apply
+            'apply': self.apply,
+            'rag': self.rag
         }
         options = self.instructions['options']
         if not options:
@@ -28,6 +34,26 @@ class Handshake(Interface):
         if not method:
             raise Exception(f"\x1b[1mInterface.Handshake: method {method_name!r} is not registered\x1b[0m")
         method()
+
+    @Interface.sub_page
+    def rag(self):
+        PARTS_REGISTRY = {
+            'test': self.rag_p1,
+        }
+        parts = self.instructions['rag_parts']
+        if not parts:
+            raise Exception("Interface.Handshake.apply: requires 'apply_parts'")
+        selection = self.prompt_options("app.joinhandshake.com > apply (^C to go back)", parts, PARTS_REGISTRY)
+        part_name = parts[selection-1]
+        part = PARTS_REGISTRY.get(part_name, None)
+        if not part:
+            print(f"\x1b[1mInterface.Handshake.rag: part {part_name!r} is not registered\x1b[0m")
+            return
+        part()
+
+    def rag_p1(self):
+        print(self.format_header("RUNNING app.joinhandshake.com > rag > p1"))
+        asyncio.run(rag_test())
 
     @Interface.sub_page
     def apply(self):

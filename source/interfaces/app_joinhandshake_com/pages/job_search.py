@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 from typing import Any, Optional
-from ..utilities.playwright_tools import wait_to_be_visible_or_retry
-from source import AuthAgent, Writer
 import json
 import os
 import re
@@ -12,17 +10,15 @@ from crawl4ai import (
     BrowserConfig, 
     JsonCssExtractionStrategy,
     CacheMode,
-    DefaultMarkdownGenerator,
-    BM25ContentFilter,
-    MemoryAdaptiveDispatcher,
-    RateLimiter
 )
 from playwright.async_api import (
     Page,
-    Locator,
     BrowserContext,
-    expect
 )
+from source.interfaces.app_joinhandshake_com.utilities.playwright_tools import (
+    wait_to_be_visible_or_retry
+)
+from source.utilities import AuthAgent, Writer
 
 
 SESSION = Path(os.getenv("SESSION_STORAGE")) / "handshake.json"
@@ -65,6 +61,7 @@ RELEVANT_JOB_HTML_SCHEMA = \
 
 
 async def after_goto(page: Page, context: BrowserContext, url: str, response, **kwargs):
+    _ = context, url, response, kwargs
     locator = page.get_by_role("button", name=re.compile(r"View.*"))
     url_pattern=r'^.*/job-search/.*$'
     await wait_to_be_visible_or_retry(page, locator.first, url_pattern=url_pattern)
@@ -83,7 +80,7 @@ def serialize(buffer: list[Any]) -> list[str]:
     return serialized_buffer
 
 
-def deserialize(row: list[str]) -> list[dict[str, Any]]:
+def deserialize_job_search(row: list[str]) -> list[dict[str, Any]]:
     return {
         'job_id': row[0],
         'position': row[1],

@@ -2,7 +2,6 @@ import os
 import re
 from pathlib import Path
 from crawl4ai import (
-    BrowserConfig,
     AsyncWebCrawler
 )
 from playwright.async_api import (
@@ -36,6 +35,7 @@ class LoginProcedures:
         password = os.getenv("PASS_APP_HANDSHAKE_COM")
         crawler = AsyncWebCrawler(config=browser_config)
         async def on_page_context_created(page: Page, context: BrowserContext, **kwargs):
+            _ = kwargs
             print("\x1b[36m[AUTH].... \u2192 Checking credentials\x1b[0m")
             await page.goto('https://uoregon.joinhandshake.com/login')
             if '/explore' in page.url:
