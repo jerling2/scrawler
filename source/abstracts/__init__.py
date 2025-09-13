@@ -1,4 +1,4 @@
-"""Subpackage providing abstract base classes for the package.
+"""Subpackage providing abstract base classes for Scrawler.
 
 This subpackage defines core abstract interfaces that other classes
 should inherit and implement.
