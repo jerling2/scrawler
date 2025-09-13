@@ -7,7 +7,7 @@ further processing.
 """
 import os
 from pathlib import Path
-from source.interfaces.app_joinhandshake_com import job_search, JobSearchState
+from source.interfaces.app_joinhandshake_com.pages.job_search import job_search, JobSearchState
 
 
 async def extract_relevant_jobs(start: int, end: int, per_page: int) -> None:

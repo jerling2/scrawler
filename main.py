@@ -1,4 +1,3 @@
-import sys
 import logfire
 from dotenv import load_dotenv
 from source import System
