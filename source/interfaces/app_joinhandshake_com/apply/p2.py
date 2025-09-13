@@ -8,11 +8,8 @@ further processing.
 """
 import os
 from pathlib import Path
-from source.interfaces.app_joinhandshake_com import (
-    deserialize_job_search,
-    JobDetailsState,
-    job_details
-)
+from source.interfaces.app_joinhandshake_com.pages.job_search import deserialize_job_search
+from source.interfaces.app_joinhandshake_com.pages.job_details import JobDetailsState, job_details
 
 
 async def add_job_details():

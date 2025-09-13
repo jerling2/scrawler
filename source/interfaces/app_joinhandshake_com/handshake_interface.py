@@ -2,14 +2,10 @@ import json
 import asyncio
 from pathlib import Path
 from source.abstracts import Interface
-from source.interfaces.app_joinhandshake_com.apply import (
-    extract_relevant_jobs,
-    add_job_details,
-    filter_jobs
-)
-from source.interfaces.app_joinhandshake_com.rag import (
-    rag_test
-)
+from source.interfaces.app_joinhandshake_com.apply.p1 import extract_relevant_jobs
+from source.interfaces.app_joinhandshake_com.apply.p2 import add_job_details
+from source.interfaces.app_joinhandshake_com.apply.p3 import filter_jobs
+from source.interfaces.app_joinhandshake_com.rag.p1 import rag_test
 
 
 class Handshake(Interface):
@@ -27,7 +23,7 @@ class Handshake(Interface):
         }
         options = self.instructions['options']
         if not options:
-            raise Exception("Interface.Handshake: requires options")
+            raise ValueError("Interface.Handshake: requires options")
         selection = self.prompt_options("app.joinhandshake.com (^C to exit)", options, OPTIONS_REGISTRY)
         method_name = options[selection-1]
         method = OPTIONS_REGISTRY.get(method_name, None)

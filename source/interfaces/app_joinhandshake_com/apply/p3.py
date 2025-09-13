@@ -9,7 +9,7 @@ from pydantic_ai import Agent
 from pydantic_ai.usage import RunUsage
 from rich.console import Console
 from rich.table import Table
-from source.interfaces.app_joinhandshake_com import deserialize_job_details
+from source.interfaces.app_joinhandshake_com.pages.job_details import deserialize_job_details
 from source.utilities import (
     Writer,
     Reader,
