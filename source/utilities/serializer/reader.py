@@ -1,9 +1,9 @@
 from collections.abc import Callable
 from typing import Any
 from pathlib import Path
+import csv
 import asyncio
 import aiofiles
-import csv
 
 
 class Reader:

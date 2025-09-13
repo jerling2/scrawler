@@ -1,8 +1,15 @@
 {
     "options": [
-        "apply"
+        "apply",
+        "rag"
     ],
     "apply_parts": [
+        "extract relevant jobs",
+        "add job details",
+        "filter jobs with keywords & llm"
+    ],
+    "rag_parts": [
+        "test",
         "extract relevant jobs",
         "add job details",
         "filter jobs with keywords & llm"

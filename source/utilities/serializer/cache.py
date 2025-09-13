@@ -1,9 +1,7 @@
 from functools import wraps
-from dataclasses import dataclass
 from typing import Optional, Any, TypeAlias
-from pathlib import Path
-from .reader import Reader
-from .writer import Writer
+from source.utilities.serializer.reader import Reader
+from source.utilities.serializer.writer import Writer
 
 
 Query: TypeAlias = tuple[str]
