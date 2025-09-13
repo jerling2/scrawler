@@ -24,11 +24,10 @@ class Writer:
     def start(self, overwrite=True):
         if self.is_running:
             return
+        self.file.parent.mkdir(parents=True, exist_ok=True)
         if overwrite:
             self.file.unlink(missing_ok=True)
-            self.file.touch(exist_ok=True)
-        elif not self.file.exists():
-            raise Exception(f'{self.file!r} does not exist')
+        self.file.touch(exist_ok=True)
         self.is_running = True
         self.worker = asyncio.create_task(self._run())
 

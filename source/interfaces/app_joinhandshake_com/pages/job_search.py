@@ -105,7 +105,6 @@ class JobSearchState:
 
 
 async def job_search(state: JobSearchState) -> None:
-
     html_schema = json.loads(RELEVANT_JOB_HTML_SCHEMA)
     browswer_config = BrowserConfig(
         storage_state=SESSION,
@@ -117,7 +116,6 @@ async def job_search(state: JobSearchState) -> None:
         stream=True,
         cache_mode=CacheMode.BYPASS,
     )
-
     writer = Writer(state.file, serialize)
     crawler = AsyncWebCrawler(config=browswer_config)
     crawler.crawler_strategy.set_hook("after_goto", after_goto)

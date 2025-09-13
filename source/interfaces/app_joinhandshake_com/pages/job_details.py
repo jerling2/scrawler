@@ -6,6 +6,7 @@ from source import (
     AuthAgent, 
     Writer, 
     Reader, 
+    Cache,
     normalize_markdown
 )
 from datetime import (
@@ -38,6 +39,13 @@ from playwright.async_api import (
 )
 
 SESSION = Path(os.getenv("SESSION_STORAGE")) / "handshake.json"
+
+CACHE_FILE = Path(os.getenv("STORAGE")) / "cache" / "app_joinhandshake_com" / "job_details.csv"
+
+if not CACHE_FILE.exists():
+    CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    CACHE_FILE.touch(exist_ok=True)
+
 
 LOGIN_URL = "https://uoregon.joinhandshake.com"
 
@@ -220,9 +228,14 @@ def clean_extracted_content(content: dict[str, Any]):
         'overview': normalize_markdown(content['overview'])
     })
 
-def serialize(buffer: list[Any]) -> list[str]:
+
+def clean_and_serialize(buffer: list[Any]) -> list[str]:
     serialized_buffer = []
     for item in buffer:
+        try:
+            clean_extracted_content(item)
+        except:
+            raise Exception(json.dumps(item, indent=4))
         serialized_buffer.append([
             item['job_id'], item['position'], item['url'],
             json.dumps(item['additional_documents']), item['company'],
@@ -237,10 +250,6 @@ def serialize(buffer: list[Any]) -> list[str]:
 def serialize(buffer: list[Any]) -> list[str]:
     serialized_buffer = []
     for item in buffer:
-        try:
-            clean_extracted_content(item)
-        except:
-            raise Exception(json.dumps(item, indent=4))
         serialized_buffer.append([
             item['job_id'], item['position'], item['url'],
             json.dumps(item['additional_documents']), item['company'],
@@ -294,42 +303,59 @@ async def job_details(state: JobDetailsState) -> None:
     markdown_config = CrawlerRunConfig(
         markdown_generator=DefaultMarkdownGenerator()
     )
-    reader = Reader(state.file_input, state.batch_size, state.deserialize)
-    writer = Writer(state.file_output, serialize)
+    cache = Cache(
+        reader=Reader(CACHE_FILE, 1024, deserialize),
+        writer=Writer(CACHE_FILE, serialize)
+    )
     crawler = AsyncWebCrawler(config=browswer_config)
     crawler.crawler_strategy.set_hook("after_goto", after_goto)
+    reader = Reader(state.file_input, state.batch_size, state.deserialize)
+    writer = Writer(state.file_output, serialize)
+    write_from_cache = Writer(state.file_output, serialize)
+    write_from_cache.start()
+    cache_misses = []
+    async for batch in reader:
+        fields = ['job_id']
+        queries = [(item['job_id'],) for item in batch]
+        misses = await cache.query_cache(write_from_cache, fields, queries)
+        cache_misses.extend([query[0] for query in misses])
+        write_from_cache.flush()
+    await write_from_cache.close()
+    job_map = {}
+    async for batch in reader:
+        job_map.update({job['url']: job for job in batch if job['job_id'] in cache_misses})
     async with AuthAgent(url=LOGIN_URL) as auth:
         await auth.login()
     await crawler.start()
-    writer.start()
-    async for batch in reader:
-        job_map = {job['url']: job for job in batch}
-        async for result in await crawler.arun_many(job_map.keys(), run_config):
-            if not result.success:
+    writer.start(overwrite=False)
+    cache.start_write()
+    async for result in await crawler.arun_many(job_map.keys(), run_config):
+        if not result.success:
+            continue
+        try:
+            content = json.loads(result.extracted_content)[0]
+            if not content.get('error_detection', None):
+                print("\x1b[31m[ERROR]...   most likely missing 'pay' information\x1b[0m")
                 continue
-            try:
-                content = json.loads(result.extracted_content)[0]
-                if not content.get('error_detection', None):
-                    print("\x1b[31m[ERROR]...   most likely missing 'pay' information\x1b[0m")
-                    continue
-                markdown: CrawlResult = await crawler.arun(f'raw://{content['overview']}', config=markdown_config)
-                if not markdown.success:
-                    print('\x1b[31;1mError generating markdown\x1b[0m')
-                    continue
-                content.update({
-                    'job_id': job_map[result.url]['job_id'],
-                    'position': job_map[result.url]['position'],
-                    'url': job_map[result.url]['url'],
-                    'overview': markdown.markdown
-                })
-                await writer.write([content])
-                if await writer.get_buffer_length() >= state.save_frequency:
-                    writer.flush()
-            except Exception as e:
-                traceback.print_exc()
-                print(f' \x1b[31mCrawl Error: {e!r}\x1b[0m')
+            markdown: CrawlResult = await crawler.arun(f'raw://{content['overview']}', config=markdown_config)
+            if not markdown.success:
+                print('\x1b[31;1mError generating markdown\x1b[0m')
+                continue
+            clean_extracted_content(content)
+            content.update({
+                'job_id': job_map[result.url]['job_id'],
+                'position': job_map[result.url]['position'],
+                'url': job_map[result.url]['url'],
+                'overview': markdown.markdown
+            })
+            await writer.write([content])
+            await cache.write([content])
+            if await writer.get_buffer_length() >= state.save_frequency:
+                writer.flush()
+                cache.flush()
+        except Exception as e:
+            traceback.print_exc()
+            print(f' \x1b[31mCrawl Error: {e!r}\x1b[0m')
     await writer.close()
+    await cache.close_write()
     await crawler.close()
-
-
-__all__ = ["deserialize", "JobDetailsState", "job_details"]

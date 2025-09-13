@@ -40,7 +40,6 @@ class Cache:
 
     @requires_reader
     async def query_cache(self, writer: Writer, fields: list[str], queries: list[Query]) -> list[Query]:
-        writer.start()
         seen = set()
         async for batch in self.cache_read:
             hits = []
@@ -50,7 +49,6 @@ class Cache:
                     seen.add(selected)
                     hits.append(cache_row)
             await writer.write(hits)
-        await writer.close()
         misses = []
         for query in queries:
             if query not in seen:
@@ -68,3 +66,7 @@ class Cache:
     @requires_writer
     async def close_write(self):
         await self.cache_write.close()
+
+    @requires_writer
+    def flush(self):
+        self.cache_write.flush()
