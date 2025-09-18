@@ -3,12 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, Protocol, Awaitable, Generic, TypeVar
 from enum import Enum
+import asyncio
 import tiktoken
 from transformers import AutoTokenizer
 from aiolimiter import AsyncLimiter
 import ollama
 from openai import AsyncOpenAI, OpenAI
-import asyncio
 
 
 T = TypeVar("T", int, float)
@@ -16,19 +16,19 @@ T = TypeVar("T", int, float)
 
 class SyncEmbedChunks(Protocol):
     """Protocol for synchronous embedding functions that process text chunks."""
-    
+
     def __call__(model: str, chunks: list[str]) -> EmbeddingResult: ...
 
 
 class AsyncEmbedChunks(Protocol):
     """Protocol for asynchronous embedding functions that process text chunks."""
-    
+
     def __call__(model: str, chunks: list[str]) -> Awaitable[EmbeddingResult]: ...
 
 
 class Tokenize(Protocol):
     """Protocol for tokenization functions that convert text to token lists."""
-    
+
     def __call__(text: str) -> list[float]: ...
 
 
@@ -139,7 +139,7 @@ def create_sync_embed_function(provider: str) -> SyncEmbedChunks:
             try:
                 response = ollama.embed(model=model, input=chunks)
                 return EmbeddingResult.success(response.embeddings, UsageResult(model=model))
-            except Exception as e:
+            except Exception:
                 return EmbeddingResult.failure()
         return embed_sync_with_ollama
     if provider == "openai":
@@ -150,10 +150,12 @@ def create_sync_embed_function(provider: str) -> SyncEmbedChunks:
                 embeddings = [obj.embedding for obj in response.data]
                 usage = UsageResult(model, total_tokens=response.usage.total_tokens)
                 return EmbeddingResult.success(embeddings, usage)
-            except Exception as e:
+            except Exception:
                 return EmbeddingResult.failure()
         return embed_sync_with_openai
-    raise ValueError(f"Unsupported embedding provider '{provider}'. Supported providers: 'ollama', 'openai'")
+    raise ValueError(
+        f"Unsupported embedding provider '{provider}'. Supported providers: 'ollama', 'openai'"
+    )
 
 
 def create_async_embed_function(provider: str) -> AsyncEmbedChunks:
@@ -173,14 +175,17 @@ def create_async_embed_function(provider: str) -> AsyncEmbedChunks:
             client = AsyncOpenAI()
             return client.embeddings.create(model=model, input=chunks)
         return embed_async_with_openai
-    raise ValueError(f"Unsupported async embedding provider '{provider}'. Supported providers: 'openai'")
+    raise ValueError(
+        f"Unsupported async embedding provider '{provider}'. Supported providers: 'openai'"
+    )
 
 
 def create_tokenizer_function(model: str) -> Tokenize:
     """Create a tokenization function for the specified model.
 
     Args:
-    - model (str): The model name ('nomic-embed-text', 'text-embedding-3-small', or 'text-embedding-3-large')
+    - model (str): The model name ('nomic-embed-text',
+        'text-embedding-3-small', or 'text-embedding-3-large')
 
     Returns:
     - (Tokenize): A tokenization function for the model
@@ -203,7 +208,10 @@ def create_tokenizer_function(model: str) -> Tokenize:
             enc = tiktoken.get_encoding('cl100k_base')
             return enc.encode(text)
         return tokenize_embedding_3_large
-    raise ValueError(f"Unsupported tokenizer model '{model}'. Supported models: 'nomic-embed-text', 'text-embedding-3-small', 'text-embedding-3-large'")
+    raise ValueError(
+        f"Unsupported tokenizer model '{model}'. Supported models: "
+        "'nomic-embed-text', 'text-embedding-3-small', 'text-embedding-3-large'"
+    )
 
 
 class SupportedEmbedding(Enum):
@@ -293,7 +301,9 @@ class CountLimiter(Generic[T]):
         """
         new_counter = self.counter + inc
         if new_counter > self.limit:
-            raise ValueError(f"Increment of {inc} would exceed limit of {self.limit} (current: {self.counter})")
+            raise ValueError(
+                f"Increment of {inc} would exceed limit of {self.limit} (current: {self.counter})"
+            )
         self.counter = new_counter
 
     async def increment_async(self, inc: T):
@@ -308,7 +318,10 @@ class CountLimiter(Generic[T]):
         async with self.counter_lock:
             new_counter = self.counter + inc
             if new_counter > self.limit:
-                raise ValueError(f"Async increment of {inc} would exceed limit of {self.limit} (current: {self.counter})")
+                raise ValueError(
+                    f"Async increment of {inc} would exceed "
+                    f"limit of {self.limit} (current: {self.counter})"
+                )
             self.counter = new_counter
 
     @property
@@ -319,7 +332,7 @@ class CountLimiter(Generic[T]):
         - (T): Remaining balance (limit - current counter)
         """
         return self.limit - self.counter
-    
+
     @property
     def used(self) -> T:
         """Get the current used amount.
@@ -371,14 +384,23 @@ class Embedder:
         - (EmbeddingResult): Result containing embeddings or failure status
 
         Raises:
-        - ValueError: If sync embedding is not supported, tokenizer is missing, or cost estimation fails
+        - ValueError: If sync embedding is not supported, tokenizer is missing,
+            or cost estimation fails
         """
         if self.embedding.sync_embed is None:
-            raise ValueError(f"Model '{self.embedding.model}' does not support synchronous embedding")
+            raise ValueError(
+                f"Model '{self.embedding.model}' does not support synchronous embedding"
+            )
         if (self.config.tok_limiter or self.config.usd_limiter) and not self.embedding.tokenize:
-            raise ValueError(f"Token or USD limiting enabled but no tokenizer function attached to model '{self.embedding.model}'")
+            raise ValueError(
+                "Token or USD limiting enabled but no tokenizer function attached to "
+                f"model '{self.embedding.model}'"
+            )
         if self.config.usd_limiter and self.embedding.cost_per_token is None:
-            raise ValueError(f"USD limiting enabled but no cost_per_token specified for model '{self.embedding.model}'")
+            raise ValueError(
+                "USD limiting enabled but no cost_per_token specified for model "
+                f"'{self.embedding.model}'"
+            )
         total_tokens: Optional[int|float] = None
         if self.config.tok_limiter or self.config.usd_limiter:
             total_tokens = self.count_tokens(chunks)
@@ -444,7 +466,7 @@ class EmbedderManager:
         if self.embedder_config.usd_limiter is None:
             raise ValueError("Cannot check used USD amount without a configured USD limiter")
         return self.embedder_config.usd_limiter.used
-    
+
     @property
     def remaining_tokens(self) -> float:
         """Get remaining token balance.
@@ -499,7 +521,8 @@ class EmbedderManager:
 async def main():
     """Run the main test demonstrating embedder usage.
 
-    Creates an embedder with limits, processes text chunks, and displays results and usage statistics.
+    Creates an embedder with limits, processes text chunks,
+    and displays results and usage statistics.
     
     Raises:
     - ValueError: If embedding operation fails
@@ -510,16 +533,17 @@ async def main():
     )
     embedding_context = EmbedderManager(config, SupportedEmbedding.NOMIC_EMBED_TEXT)
     async with embedding_context as embedder:
-        embeddingResult = embedder.embed_sync(["Hello", "world"])
-        if not embeddingResult.ok:
-            raise ValueError("Embedding operation failed - check rate limits and model availability")
-        for embedding in embeddingResult.output:
+        embedding_result = embedder.embed_sync(["Hello", "world"])
+        if not embedding_result.ok:
+            raise ValueError(
+                "Embedding operation failed - check rate limits and model availability"
+            )
+        for embedding in embedding_result.output:
             print(f"{embedding[0:4]}") #< print the first 4 values
-        print(f'{embeddingResult.usage!r}')
+        print(f'{embedding_result.usage!r}')
     print(embedding_context.remaining_tokens)
     print(embedding_context.remaining_usd)
 
 
 if __name__ == "__main__":
-    import asyncio
     asyncio.run(main())
