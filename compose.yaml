@@ -1,5 +1,14 @@
 services:
 
+  db:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/postgresql:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: example
+
   ollama:
     image: ollama/ollama
     restart: unless-stopped
