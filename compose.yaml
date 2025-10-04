@@ -2,30 +2,35 @@ services:
 
   db:
     image: postgres
+    container_name: scrawler-postgres
     restart: always
     shm_size: 128mb
-    volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/postgresql:/var/lib/postgresql/data
     environment:
-      POSTGRES_PASSWORD: example
+      POSTGRES_PASSWORD: ${SCRAWLER_POSTGRES_SUPERUSER_PASSWORD}
+    volumes:
+      - ./volumes/postgresql:/var/lib/postgresql/data
+    ports:
+      - "${SCRAWLER_POSTGRES_PORT}:5432"
 
   ollama:
     image: ollama/ollama
+    container_name: scrawler-ollama
     restart: unless-stopped
     volumes:
-      - ollama:/root/.ollama
+      - ./volumes/ollama:/root/.ollama
     ports:
       - "11434:11434"
 
   etcd:
     image: quay.io/coreos/etcd:v3.5.18
+    container_name: scrawler-milvus-etcd
     environment:
       - ETCD_AUTO_COMPACTION_MODE=revision
       - ETCD_AUTO_COMPACTION_RETENTION=1000
       - ETCD_QUOTA_BACKEND_BYTES=4294967296
       - ETCD_SNAPSHOT_COUNT=50000
     volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd:/etcd
+      - ./volumes/etcd:/etcd
     command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
     healthcheck:
       test: ["CMD", "etcdctl", "endpoint", "health"]
@@ -35,6 +40,7 @@ services:
 
   minio:
     image: minio/minio:RELEASE.2024-05-28T17-19-04Z
+    container_name: scrawler-milvus-minio
     environment:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
@@ -42,7 +48,7 @@ services:
       - "9001:9001"
       - "9000:9000"
     volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/minio:/minio_data
+      - ./volumes/minio:/minio_data
     command: minio server /minio_data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -52,6 +58,7 @@ services:
 
   standalone:
     image: milvusdb/milvus:v2.5.14
+    container_name: scrawler-milvus-standalone
     command: ["milvus", "run", "standalone"]
     security_opt:
       - seccomp:unconfined
@@ -60,7 +67,7 @@ services:
       ETCD_ENDPOINTS: etcd:2379
       MINIO_ADDRESS: minio:9000
     volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/milvus:/var/lib/milvus
+      - ./volumes/milvus:/var/lib/milvus
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
       interval: 30s
@@ -77,6 +84,3 @@ services:
 networks:
   default:
     name: milvus
-
-volumes:
-  ollama:

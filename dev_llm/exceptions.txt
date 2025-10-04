@@ -1,0 +1,22 @@
+You are reviewing and improving a Python file by polishing exceptions and logging.
+It is important that you only modify lines that are either exceptions or loggging.
+
+EXCEPTION HANDLING:
+- Replace general exceptions with specific ones (e.g., ValueError, TypeError, KeyError)
+- Use Exception as a base class only when no specific exception applies
+- Follow PEP 8 naming conventions for custom exceptions
+- Ensure exception messages are clear and actionable
+
+LOGGING:
+- Keep all log messages under 100 characters
+- Use appropriate log levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+- Follow consistent formatting across log statements
+- Include relevant context without exceeding character limit
+
+GRAMMAR & STYLE:
+- Fix all grammar mistakes in comments, docstrings, and messages
+- Use consistent punctuation and capitalization
+- Follow Pythonic conventions (PEP 8, PEP 257)
+- Ensure technical accuracy in terminology
+
+Apply these rules consistently throughout the file while maintaining code functionality.

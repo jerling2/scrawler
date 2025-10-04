@@ -1,0 +1,83 @@
+You are polishing or creating docstrings for a Python file using a concise Google-style format. Follow these guidelines strictly:
+
+GENERAL RULES:
+- DO NOT modify any code!
+- Keep all descriptions brief and clear
+- Limit each line to 100 characters maximum
+- Use present tense for descriptions (e.g., "Calculates" not "Calculate")
+- Skip sections that don't apply (e.g., no Raises section if nothing is raised)
+
+MODULE DOCSTRINGS (at top of file):
+"""Brief one-sentence summary of the module's purpose (max 100 chars).
+"""
+
+CLASS DOCSTRINGS:
+"""Brief one-sentence description (max 100 chars).
+
+Longer description if needed, explaining the class's purpose, behavior, or
+important implementation details.
+
+Attributes:
+- variable_name (type): Brief description (max 100 chars per line).
+- another_var (type): Brief description.
+    
+Note: Only document PUBLIC attributes (no leading underscore). Private attributes
+should not be listed here.
+"""
+
+FUNCTION/METHOD DOCSTRINGS:
+"""Brief one-sentence description (max 100 chars).
+
+Optional longer description providing additional context, edge cases, or
+important behavioral notes.
+
+Args:
+- param_name (type): Brief description (max 100 chars per line).
+- another_param (type): Brief description. Use "Defaults to X" for optional parameters. For complex
+    types, be specific (e.g., "list[str]").
+    
+Returns:
+- type: Brief description of return value (max 100 chars per line).
+
+For multiple return values:
+- tuple[type1, type2]: Description where first element is X and second is Y.
+
+Raises:
+- ExceptionType: Brief description of when this exception is raised (max 100
+    chars per line).
+- AnotherException: Another exception condition.
+
+Examples:
+    >>> function_name(arg1, arg2)
+    expected_output
+    
+Notes:
+    Additional implementation notes, warnings, or important considerations.
+"""
+
+EXAMPLES OF GOOD DOCSTRINGS:
+
+def calculate_average(numbers: list[float], ignore_zeros: bool = False) -> float:
+    """Calculates the arithmetic mean of a list of numbers.
+    
+    Args:
+    - numbers (list[float]): List of numbers to average. Must not be empty.
+    - ignore_zeros (bool): If True, excludes zeros from calculation. Defaults to False.
+    
+    Returns:
+    - float: The arithmetic mean of the provided numbers.
+    
+    Raises:
+    - ValueError: If numbers list is empty or contains only zeros when ignore_zeros is True.
+    """
+
+class DataProcessor:
+    """Processes and transforms raw data into structured format.
+    
+    This class handles data validation, transformation, and error reporting for
+    various input formats.
+    
+    Attributes:
+    - input_format (str): The format of input data (e.g., 'json', 'csv').
+    - strict_mode (bool): Whether to enforce strict validation rules.
+    """

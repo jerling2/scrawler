@@ -11,6 +11,7 @@ anthropic==0.65.0
 anyio==4.9.0
 argcomplete==3.6.2
 astroid==3.3.11
+asyncpg==0.30.0
 attrs==25.3.0
 beautifulsoup4==4.13.4
 boto3==1.40.22
@@ -21,7 +22,7 @@ certifi==2025.7.14
 cffi==1.17.1
 chardet==5.2.0
 charset-normalizer==3.4.2
-click==8.2.1
+click==8.0.1
 click-log==0.4.0
 cohere==5.17.0
 colorama==0.4.6
@@ -58,6 +59,7 @@ humanize==4.12.3
 hyperframe==6.1.0
 idna==3.10
 importlib_metadata==8.7.0
+iniconfig==2.1.0
 invoke==2.2.0
 isort==6.0.1
 Jinja2==3.1.6
@@ -77,6 +79,7 @@ mccabe==0.7.0
 mcp==1.13.1
 mdurl==0.1.2
 milvus-lite==2.5.1
+milvus_cli==1.0.2
 mistralai==1.9.10
 multidict==6.6.3
 networkx==3.5
@@ -97,10 +100,12 @@ pandas==2.3.2
 pillow==11.3.0
 platformdirs==4.4.0
 playwright==1.54.0
+pluggy==1.6.0
 prompt_toolkit==3.0.52
 propcache==0.3.2
 protobuf==5.29.5
 psutil==7.0.0
+psycopg2==2.9.10
 pyasn1==0.6.1
 pyasn1_modules==0.4.2
 pycparser==2.22
@@ -117,6 +122,7 @@ pylint==3.3.8
 pymilvus==2.6.0
 pyOpenSSL==25.1.0
 pyperclip==1.9.0
+pytest==8.4.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
 python-multipart==0.0.20
@@ -125,12 +131,13 @@ PyYAML==6.0.2
 rank-bm25==0.2.2
 referencing==0.36.2
 regex==2025.7.34
-requests==2.32.4
+requests==2.31.0
 rich==14.1.0
 rpds-py==0.26.0
 rsa==4.9.1
 rtree==1.4.0
 s3transfer==0.13.1
+safetensors==0.6.2
 scipy==1.16.1
 setuptools==80.9.0
 shapely==2.1.1
@@ -140,13 +147,15 @@ snowballstemmer==2.2.0
 soupsieve==2.7
 sse-starlette==3.0.2
 starlette==0.47.3
+tabulate==0.8.9
 temporalio==1.16.0
 tenacity==9.1.2
 tf-playwright-stealth==1.2.0
 tiktoken==0.9.0
-tokenizers==0.21.4
+tokenizers==0.22.0
 tomlkit==0.13.3
 tqdm==4.67.1
+transformers==4.56.1
 trimesh==4.7.1
 types-protobuf==6.30.2.20250822
 types-requests==2.32.4.20250809
