@@ -1,0 +1,26 @@
+{
+    // --- Python Testing / pytest ---
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": ["tests"],
+    // --- Python & Linting ---
+    "python.linting.enabled": false,
+    "python.linting.pylintEnabled": true, // enable Pylint
+    "python.linting.flake8Enabled": false,
+    "python.linting.mypyEnabled": false,
+    "python.linting.pydocstyleEnabled": false,
+    // --- Pylance / IntelliSense ---
+    "python.languageServer": "Pylance",
+    // --- Hover & Signature Help ---
+    "editor.hover.enabled": true,
+    "editor.parameterHints.enabled": true,
+    "editor.quickSuggestions": {
+        "other": true,
+        "comments": false,
+        "strings": true
+    },
+    "python.linting.pylintArgs": [
+        "--init-hook",
+        "import sys; sys.path.append('${workspaceFolder}')"
+    ],
+    "python.testing.unittestEnabled": false
+}
