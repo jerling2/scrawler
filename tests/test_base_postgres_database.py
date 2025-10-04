@@ -1,6 +1,6 @@
 import pytest
 from source.utilities.database.logging.logger import get_database_logger
-from source.utilities.database.abc.postgres_database import PSQLDatabase, SQLStatement
+from source.utilities.database.base.postgres_database import PSQLDatabase, SQLStatement
 
 logger = get_database_logger()
 
