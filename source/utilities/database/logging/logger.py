@@ -1,7 +1,8 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TextIO, Literal
+from functools import wraps
+from typing import TextIO, Literal, Optional, Any
 import sys
 import os
 import logging
@@ -35,3 +36,41 @@ def get_database_logger(config: DBLoggerConfig=DBLoggerConfig()) -> logging.Logg
         logger.addHandler(console_handler)
         logger.addHandler(file_handler)
     return logger
+
+
+logger = get_database_logger()
+
+
+def log_errors(
+    operation_name: str,
+    logger_func: logging.Logger=logger,
+    reraise: bool = True,
+    return_on_error: Optional[Any] = None
+):
+    """Wraps database operations with error logging and optional exception handling.
+    
+    Args:
+    - operation_name (str): Name of the operation being logged.
+    - logger_func (Logger): Logger instance to use. Defaults to module logger.
+    - reraise (bool): If True, re-raises exceptions after logging. Defaults to True.
+    - return_on_error (Optional[Any]): Value to return if exception occurs and reraise is False.
+        Defaults to None.
+    
+    Returns:
+    - callable: Decorated function with error logging capability.
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except Exception as e:
+                logger_func.error(
+                    f"Error in '{operation_name}' for '{self.config.database}': "
+                    f"{type(e).__name__}: {str(e).strip()}"
+                )
+                if reraise:
+                    raise
+            return return_on_error
+        return wrapper
+    return decorator
