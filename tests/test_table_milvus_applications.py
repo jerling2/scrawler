@@ -82,7 +82,10 @@ def test_milvus_delete(manager, example_data):
     manager.delete([0])
 
 def test_milvus_search(manager, example_data, search_vector):
+    # The Application's table isn't set to 'Strong' consistency, so it is possible to read before all writes are committed.
+    import time
     manager.create_collection()
     manager.insert(example_data)
+    time.sleep(1)  #< Wait for writes to finish.
     results = manager.search([search_vector], limit=5)
     assert len(results[0]) == 5
