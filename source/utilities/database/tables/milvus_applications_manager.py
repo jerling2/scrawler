@@ -83,11 +83,12 @@ class MilvusApplicationsManager(MilvusDatabase):
         return result
     
     @log_errors(operation_name="search")
-    def search(self, vectors: list[float], limit: int) -> list[list[Any]]:
-        results = self.client.query(
+    def search(self, vectors: list[float], limit: int) -> list[list[dict[str, Any]]]:
+        results = self.client.search(
             self.collection_name, 
             data=vectors,
             limit=limit,
-            output_fields=["application_id", "chunk_idx", "chunk_txt"]
+            anns_field="chunk_vec",
+            output_fields=["application_id", "chunk_idx", "chunk_txt"],
         )
-        return list(results)
+        return [[hit.fields for hit in result] for result in results]

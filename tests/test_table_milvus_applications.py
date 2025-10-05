@@ -85,4 +85,4 @@ def test_milvus_search(manager, example_data, search_vector):
     manager.create_collection()
     manager.insert(example_data)
     results = manager.search([search_vector], limit=5)
-    assert len(results) == 5
+    assert len(results[0]) == 5
