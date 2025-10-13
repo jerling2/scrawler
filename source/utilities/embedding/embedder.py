@@ -428,15 +428,15 @@ class EmbedderManager:
     - embedding (SupportedEmbedding): The embedding model
     - embedder (Embedder): The managed embedder instance
     """
-    def __init__(self, embedder_config: EmbedderConfig, embedding: SupportedEmbedding):
+    def __init__(self, embedding: SupportedEmbedding, embedder_config: EmbedderConfig = None):
         """Initialize the embedder manager.
 
         Args:
-        - embedder_config (EmbedderConfig): Configuration for rate limits and constraints
         - embedding (SupportedEmbedding): The embedding model to use
+        - embedder_config Optional(EmbedderConfig): Configuration for rate limits and constraints
         """
-        self.embedder_config = embedder_config
         self.embedding = embedding
+        self.embedder_config = embedder_config or EmbedderConfig()
         self.embedder = Embedder(embedder_config, embedding)
 
     @property
@@ -516,34 +516,3 @@ class EmbedderManager:
         """
         _ = exc_type, exc, tb
         return False
-
-
-async def main():
-    """Run the main test demonstrating embedder usage.
-
-    Creates an embedder with limits, processes text chunks,
-    and displays results and usage statistics.
-    
-    Raises:
-    - ValueError: If embedding operation fails
-    """
-    config = EmbedderConfig(
-        tok_limiter=CountLimiter(limit=6),
-        usd_limiter=CountLimiter(limit=1.0)
-    )
-    embedding_context = EmbedderManager(config, SupportedEmbedding.NOMIC_EMBED_TEXT)
-    async with embedding_context as embedder:
-        embedding_result = embedder.embed_sync(["Hello", "world"])
-        if not embedding_result.ok:
-            raise ValueError(
-                "Embedding operation failed - check rate limits and model availability"
-            )
-        for embedding in embedding_result.output:
-            print(f"{embedding[0:4]}") #< print the first 4 values
-        print(f'{embedding_result.usage!r}')
-    print(embedding_context.remaining_tokens)
-    print(embedding_context.remaining_usd)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
