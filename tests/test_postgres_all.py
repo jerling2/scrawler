@@ -16,6 +16,11 @@ def conn():
 def repo(conn):
     repo = PostgresApplicationsRepo('pytest_applications_table', conn)
     yield repo
+    try:
+        repo.drop_table()
+        conn.client.commit()
+    except:
+        conn.client.rollback()
 
 @pytest.fixture
 def random_data():
@@ -39,30 +44,26 @@ def test_repo(repo):
     assert repo
 
 def test_create(repo, conn):
-    with conn.client.cursor():
-        try:
-            repo.create_table()
-            conn.client.commit()
-        except DuplicateTable:
-            conn.client.rollback()
+    try:
+        repo.create_table()
+        conn.client.commit()
+    except DuplicateTable:
+        conn.client.rollback()
 
 def test_drop(repo, conn):
-    with conn.client.cursor():
-        try:
-            repo.drop_table()
-            conn.client.commit()
-        except UndefinedTable:
-            conn.client.rollback()
+    try:
+        repo.drop_table()
+        conn.client.commit()
+    except UndefinedTable:
+        conn.client.rollback()
 
 def test_insert(repo, conn, random_data):
-    with conn.client.cursor():
-        try:
-            repo.create_table()
-            conn.client.commit()
-        except DuplicateTable:
-            conn.client.rollback()
-
-    with conn.client.cursor():
-        for application in random_data:
-            repo.insert(application)
+    try:
+        repo.create_table()
         conn.client.commit()
+    except DuplicateTable:
+        conn.client.rollback()
+
+    for application in random_data:
+        repo.insert(application)
+    conn.client.commit()
