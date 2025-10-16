@@ -1,6 +1,6 @@
 from psycopg2 import sql
-from source.utilities.database.connections.postgres_connection import PostgresConnection
-from source.utilities.database.models.postgres_applications_model import PostgresApplicationsModel, PostgresApplicationEntity
+from source.database.warehouse.connections import PostgresConnection
+from source.database.warehouse.models import PostgresApplicationsModel, PostgresApplicationEntity
 
 
 class PostgresApplicationsRepo:
@@ -25,7 +25,7 @@ class PostgresApplicationsRepo:
         with self.conn.client.cursor() as cur:
             cur.execute(query)
 
-    def create_application(self, entity: PostgresApplicationEntity):
+    def insert(self, entity: PostgresApplicationEntity):
         query = sql.SQL("INSERT INTO {} ({}) VALUES ({})").format(
             sql.Identifier(self.table_name),
             sql.SQL(', ').join(entity.col_names()),

@@ -2,9 +2,7 @@ import pytest
 import time
 import random
 from source.utilities.embedding.embedder import SupportedEmbedding
-from source.utilities.database.models.milvus_applications_model import MilvusApplicationsModel, MilvusApplicationEntity
-from source.utilities.database.connections.milvus_connection import MilvusConnection
-from source.utilities.database.repos.milvus_applications_repo import MilvusApplicationsRepo
+from source import MilvusApplicationsModel, MilvusApplicationEntity, MilvusConnection, MilvusApplicationsRepo
 
 
 WAIT_FOR_WRITE = 1 # seconds

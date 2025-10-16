@@ -1,6 +1,7 @@
 from typing import Any
-from source.utilities.database.models.milvus_applications_model import MilvusApplicationsModel, MilvusApplicationEntity
-from source.utilities.database.connections.milvus_connection import MilvusConnection
+from source.database.warehouse.connections import MilvusConnection
+from source.database.warehouse.models import MilvusApplicationsModel, MilvusApplicationEntity
+
 
 class MilvusApplicationsRepo():
 

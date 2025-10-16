@@ -1,9 +1,8 @@
 import pytest
 import random
 from datetime import datetime
-from source.utilities.database.models.postgres_applications_model import PostgresApplicationEntity
-from source.utilities.database.connections.postgres_connection import PostgresConnection
-from source.utilities.database.repos.postgres_applications_repo import PostgresApplicationsRepo
+from source import PostgresApplicationEntity, PostgresConnection, PostgresApplicationsRepo
+
 
 @pytest.fixture(scope="session")
 def conn():
@@ -51,5 +50,5 @@ def test_drop(repo, conn):
 def test_insert(repo, conn, random_data):
     with conn.client.cursor():
         for application in random_data:
-            repo.create_application(application)
+            repo.insert(application)
         conn.client.commit()
