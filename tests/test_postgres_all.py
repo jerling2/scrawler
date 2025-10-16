@@ -1,6 +1,7 @@
 import pytest
 import random
 from datetime import datetime
+from psycopg2.errors import DuplicateTable, UndefinedTable
 from source import PostgresApplicationEntity, PostgresConnection, PostgresApplicationsRepo
 
 
@@ -39,15 +40,28 @@ def test_repo(repo):
 
 def test_create(repo, conn):
     with conn.client.cursor():
-        repo.create_table()
-        conn.client.commit()
+        try:
+            repo.create_table()
+            conn.client.commit()
+        except DuplicateTable:
+            conn.client.rollback()
 
 def test_drop(repo, conn):
     with conn.client.cursor():
-        repo.drop_table()
-        conn.client.commit()
+        try:
+            repo.drop_table()
+            conn.client.commit()
+        except UndefinedTable:
+            conn.client.rollback()
 
 def test_insert(repo, conn, random_data):
+    with conn.client.cursor():
+        try:
+            repo.create_table()
+            conn.client.commit()
+        except DuplicateTable:
+            conn.client.rollback()
+
     with conn.client.cursor():
         for application in random_data:
             repo.insert(application)
