@@ -1,5 +1,4 @@
 import pytest
-import os
 from source import MongoConnection, HandshakeRawJobListingsRepo
 
 
