@@ -39,23 +39,19 @@ class MongoConnection:
 
     def __init__(self, config = MongoConnectionConfig.from_env()):
         self.config = config
-        self.__client = None
-
-    @property
-    def client(self):
-        return self.__client
+        self.client = None
 
     def connect(self):
-        if self.__client is None:
-            self.__client = MongoClient(self.config.uri)
+        if self.client is None:
+            self.client = MongoClient(self.config.uri)
         
     def close(self):
-        if self.__client is not None:
-            self.__client.close()
-        self.__client = None
-        
+        if self.client is not None:
+            self.client.close()
+        self.client = None
+
     def get_database(self):
-        return self.__client.get_default_database()
+        return self.client.get_default_database()
     
     def get_collection(self, collection_name: str):
-        return self.__client.get_default_database()[collection_name]
+        return self.client.get_default_database()[collection_name]
