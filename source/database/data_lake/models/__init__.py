@@ -1,4 +1,4 @@
-from .handshake_raw_listings_model import HandshakeRawListingsEntity, HandshakeRawListingsModel
+from .handshake_raw_listings_model import HandshakeRawJobListingsEntity, HandshakeRawJobListingsModel
 
 
-__all__ = ['HandshakeRawListingsEntity', 'HandshakeRawListingsModel']
+__all__ = ['HandshakeRawJobListingsEntity', 'HandshakeRawJobListingsModel']
