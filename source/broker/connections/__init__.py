@@ -1,5 +1,4 @@
-from .kafka_producer_connection import KafkaProducerConfig
-from .kafka_consumer_connection import KafkaConsumerConfig
+from .kafka_connection import KafkaConnectionConfig, KafkaConsumerConfig, KafkaProducerConfig
 
 
-__all__ = ['KafkaProducerConfig', 'KafkaConsumerConfig']
+__all__ = ['KafkaConnectionConfig', 'KafkaConsumerConfig', 'KafkaProducerConfig']
