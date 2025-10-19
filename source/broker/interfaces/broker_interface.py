@@ -1,15 +1,17 @@
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any, Callable, Protocol
 
 
-@dataclass(frozen=True)
-class MessageModel:
-    serialize: Callable[[Any], bytes]
-    deserialize: Callable[[bytes], Any]
+class MessageInterface(Protocol):
+    def serialize(self, payload: Any) -> bytes:
+        ...
+
+    def deserialize(self, data: bytes) -> Any:
+        ...
 
 
 @dataclass(frozen=True)
 class ConsumerConfig:
     topics: list[str]
-    model: MessageModel
-    handler: Callable[[Any], None]
+    model: MessageInterface
+    notify: Callable[[Any], None]

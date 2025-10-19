@@ -1,4 +1,4 @@
-from .broker_interface import MessageModel, ConsumerConfig
+from .broker_interface import MessageInterface, ConsumerConfig
 
 
-__all__ = ['MessageModel', 'ConsumerConfig']
+__all__ = ['MessageInterface', 'ConsumerConfig']
