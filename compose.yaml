@@ -99,7 +99,7 @@ services:
     volumes:
       - ./volumes/kafka:/opt/kafka/data
     ports:
-      - "9002:9092"
+      - "9092:9092"
     environment:
       KAFKA_LOG_DIRS: /opt/kafka/data
 
