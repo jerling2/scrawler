@@ -1,5 +1,8 @@
 from dataclasses import dataclass
-from typing import Any, Callable, Protocol
+from typing import Any, Callable, Protocol, TypeAlias
+
+
+on_notify: TypeAlias = Callable[[Any], None]
 
 
 class MessageInterface(Protocol):
@@ -11,7 +14,7 @@ class MessageInterface(Protocol):
 
 
 @dataclass(frozen=True)
-class ConsumerConfig:
+class IPGConsumerConfig:
     topics: list[str]
     model: MessageInterface
-    notify: Callable[[Any], None]
+    notify: on_notify

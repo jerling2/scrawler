@@ -2,15 +2,29 @@ from __future__ import annotations
 import os
 from typing import Optional, Any
 from dataclasses import dataclass, field, asdict
+from confluent_kafka import (
+    Consumer as KafkaConsumer, 
+    Producer as KafkaProducer
+)
+import confluent_kafka
 
 
 # Refer to the official documentation for the librdkafka library for all, up-to-date, configuration properties.
-
 
 @dataclass(frozen=True)
 class KafkaConnectionConfig:
     consumer_config: Optional[KafkaConsumerConfig] = None
     producer_config: Optional[KafkaProducerConfig] = None
+
+    def get_consumer(self) -> confluent_kafka.Consumer:
+        if self.consumer_config is None:
+            return
+        return KafkaConsumer(self.consumer_config.as_dict())
+    
+    def get_producer(self) -> confluent_kafka.Producer:
+        if self.producer_config is None:
+            return
+        return KafkaProducer(self.producer_config.as_dict())
 
 
 @dataclass(frozen=True)
@@ -36,12 +50,23 @@ class KafkaConsumerConfig:
         },
         default=None
     )
+    auto_offset_reset: Optional[str] = field(
+        metadata={
+            'description': "Refers to where the consumer starts to read messages from the buffer.",
+            'example':  \
+                "If set to latest, the consumer will only process messages that arrive after it"
+                "initializes. If set to earliest, the consumer will process messages that are at"
+                "the start of the buffer."
+        },
+        default=None
+    )
 
     @classmethod
     def from_env(cls, group_id: str, **kwargs) -> KafkaConsumerConfig:
         return KafkaConsumerConfig(
             bootstrap_servers=os.environ['KAFKA_BOOSTRAP_SERVERS'],
             group_id=group_id,
+            auto_offset_reset=os.environ['KAFKA_AUTO_OFFSET_RESET'],
             **kwargs
         )
 

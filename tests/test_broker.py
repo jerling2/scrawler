@@ -4,9 +4,9 @@ from source import (
     KafkaConsumerConfig,
     KafkaProducerConfig,
     InterProcessGateway,
-    JsonMessageModel
+    JsonMessageModel,
+    IPGConsumerConfig
 )
-
 
 @pytest.fixture(scope='session')
 def conn_config():
@@ -30,31 +30,46 @@ def broker(conn_config):
     ipg.close()
 
 @pytest.fixture()
-def producer_01():
-    model = JsonMessageModel()
-    topic = 'pytest'
-    key = 'pytest_user_01'
-    
+def pytest_payload():
+    return \
+    {
+        'data': 'hello from pytest'
+    }
+
+@pytest.fixture()
+def producers(pytest_payload):
     def on_deliver(err, msg):
         _ = msg
         if err is not None:
             raise Exception
-            
-    return (model, topic, key, on_deliver)
+    topics_01 = ['pytest_topic_1', 'pytest_topic_2']
+    topics_02 = ['pytest_topic_2', 'pytest_topic_3']
+    num_topics = len(topics_01)
+    keys_01 = ['pytest_user_01' for _ in range(num_topics)]
+    keys_02 = ['pytest_user_02' for _ in range(num_topics)]
+    models = [JsonMessageModel() for _ in range(num_topics)]
+    cbs = [on_deliver for _ in range(num_topics)]
+    payloads = [pytest_payload for _ in range(num_topics)]
+    producer_01 = list(zip(models, topics_01, payloads, keys_01, cbs))
+    producer_02 = list(zip(models, topics_02, payloads, keys_02, cbs))
+    return [*producer_01, *producer_02]
 
+@pytest.fixture()
+def consumers(pytest_payload):
+    topics_01 = ['pytest_topic_1', 'pytest_topic_2']
+    topics_02 = ['pytest_topic_2', 'pytest_topic_3']
+    model = JsonMessageModel()
+    def on_notify(payload):
+        assert payload == pytest_payload
+    consumer_01 = IPGConsumerConfig(topics_01, model, on_notify)
+    consumer_02 = IPGConsumerConfig(topics_02, model, on_notify)
+    return (consumer_01, consumer_02)
 
-def test_broker_init(broker):
-    assert broker
-
-def test_producer_01(broker, producer_01):
-    model, topic, key, on_deliver = producer_01
-    payload = {
-        'data': 'Hello from pytest'
-    }
-    broker.send(
-        model,
-        topic,
-        payload,
-        key,
-        on_deliver
-    )
+def test_round_trip(broker, consumers, producers):
+    RUN_FOR = 30 # Seconds
+    for p in producers:
+        broker.send(*p)
+    broker.set_consumers(consumers)
+    for _ in range(RUN_FOR):
+        broker.listen(timeout=1.0)
+        broker.emit()
