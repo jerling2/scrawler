@@ -25,6 +25,11 @@ class InterProcessGateway:
         self.listener_registry = {}
         self.consumer = self.config.get_consumer()
         self.producer = self.config.get_producer()
+        self._is_closed = False
+
+    @property
+    def is_closed(self):
+        return self._is_closed 
 
     def send(self, model: MessageInterface, topic: str, payload: Any,
         key: Optional[str] = None, cb: Optional[DeliveryCallback] = None
@@ -80,4 +85,6 @@ class InterProcessGateway:
 
         if self.consumer is not None:
             close_consumer()
+        
+        self._is_closed = True
         
