@@ -11,7 +11,6 @@ class MainControlProgram:
     def _exit_gracefully(self, signum, frame):
         _ = signum, frame
         self.model.teardown()
-        self._restore_signal_handlers()
 
     def _attach_signal_handlers(self):
         self.signal_handler_context[signal.SIGINT] = \
@@ -26,3 +25,4 @@ class MainControlProgram:
     def run(self):
         self._attach_signal_handlers()
         self.model.run_loop()
+        self._restore_signal_handlers()
