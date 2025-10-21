@@ -9,7 +9,7 @@ def get_kafka_admin_client() -> AdminClient:
     })
     
 
-def create_kafka_topic(admin_client: AdminClient, topics: list[str], num_partitions: int=1) -> None:
+def create_kafka_topics(admin_client: AdminClient, topics: list[str], num_partitions: int=1) -> None:
     new_topics = [
         NewTopic(topic, num_partitions=num_partitions, replication_factor=1)
         for topic in topics
@@ -18,5 +18,7 @@ def create_kafka_topic(admin_client: AdminClient, topics: list[str], num_partiti
     for future in futures.values():
         try:
             future.result()
-        except KafkaError.TOPIC_ALREAD_EXISTS:
-            continue
+        except Exception as e:
+            if e.args and isinstance(e.args[0], KafkaError) and e.args[0].code() == KafkaError.TOPIC_ALREADY_EXISTS:
+                continue
+            raise 
