@@ -5,6 +5,7 @@ from .serializer.cache import Cache
 from .normalize.markdown import normalize_markdown
 from .compress_data import zlib_compress, zlib_decompress
 from .kafka_admin import get_kafka_admin_client, create_kafka_topics
+from .backoff import async_exponential_backoff_with_jitter
 
 
-__all__ = ['get_kafka_admin_client', 'create_kafka_topics', 'AuthAgent', 'Writer', 'Reader', 'Cache', 'normalize_markdown', 'zlib_compress', 'zlib_decompress']
+__all__ = ['async_exponential_backoff_with_jitter', 'get_kafka_admin_client', 'create_kafka_topics', 'AuthAgent', 'Writer', 'Reader', 'Cache', 'normalize_markdown', 'zlib_compress', 'zlib_decompress']

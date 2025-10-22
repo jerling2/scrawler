@@ -6,7 +6,7 @@ from source.broker import JsonMessageModel
 @dataclass(frozen=True)
 class APIExtractHandshakeJobStage1:
     start_page: int = 1
-    end_page: int = 20
+    end_page: int = 40
     per_page: int = 50
     source_topic = 'extract.handshake.job.stage1.v1'
     model = JsonMessageModel()

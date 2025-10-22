@@ -1,12 +1,13 @@
-from __future__ import annotations
+import os
 import asyncio
 from dataclasses import dataclass
-from crawl4ai import BrowserConfig
+from pathlib import Path
 from typing import Any
+from crawl4ai import BrowserConfig, CrawlerRunConfig, CacheMode, AsyncWebCrawler, MemoryAdaptiveDispatcher, RateLimiter
 from source.broker import InterProcessGateway, JsonMessageModel, IPGConsumerConfig
 from source.database import HandshakeRawJobListingsRepo
 from source.crawlers.base import CrawlerFactory, CrawlerFactoryConfig
-from source.crawlers.handshake.hooks.handshake_p1_listings_hooks import create_handshake_p1_after_goto_hook
+from source.crawlers.handshake.hooks import create_extract_job_stage1_after_goto_hook
 from source.crawlers.handshake.handshake_auth import HandshakeAuth
 
 
@@ -14,17 +15,20 @@ from source.crawlers.handshake.handshake_auth import HandshakeAuth
 class HandshakeExtractListingsConfig:
     source_topics = ['extract.handshake.job.stage1.v1']
     msg_model = JsonMessageModel()
-    auth: HandshakeAuth = HandshakeAuth()
     base_url: str = "https://app.joinhandshake.com/job-search/?page={}&per_page={}"
 
-    def get_crawler(self) -> CrawlerFactoryConfig:
+    def get_auth(self) -> HandshakeAuth:
+        return HandshakeAuth()
+
+    def get_crawler(self) -> AsyncWebCrawler:
         return CrawlerFactory(
             CrawlerFactoryConfig(
                 browser_config=BrowserConfig(
-                    headless=False
+                    headless=False,
+                    storage_state=Path(os.environ['SESSION_STORAGE']) / 'handshake.json'
                 ),
                 hooks={
-                    'after_goto': create_handshake_p1_after_goto_hook()
+                    'after_goto': create_extract_job_stage1_after_goto_hook()
                 }
             )
         ).create_crawler()
@@ -41,6 +45,7 @@ class HandshakeExtractListings:
         self.config = config
         self.broker = broker
         self.repo = repo
+        self.auth = config.get_auth()
         self.crawler = config.get_crawler()
 
     @property
@@ -70,6 +75,18 @@ class HandshakeExtractListings:
             self.config.base_url.format(page, per_page) 
             for page in range(start_page, end_page + 1)
         ]
-        _ = urls
-        await self.crawler.start()
-        await self.crawler.close()
+        run_config = CrawlerRunConfig(stream=True, cache_mode=CacheMode.BYPASS)
+        dispatcher = MemoryAdaptiveDispatcher(
+            max_session_permit=5,
+            rate_limiter=RateLimiter()
+        )
+        self.auth.login()
+        temp = []
+        failed = []
+        async for result in await self.crawler.arun_many(urls, run_config, dispatcher):
+            pass
+            if not result.success:
+                failed.append(result)
+                continue
+            temp.append(result.html)
+        pass
