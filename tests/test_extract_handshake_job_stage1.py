@@ -42,9 +42,9 @@ def mongo_connection():
 
 @pytest.fixture(scope='session')
 def repo(mongo_connection):
-    repo = HandshakeRawJobListingsRepo('pytest_handshake_p1', mongo_connection)
+    repo = HandshakeRawJobListingsRepo('pytest_raw_handshake_job_stage1', mongo_connection)
     yield repo
-    mongo_connection.get_collection('pytest_handshake_p1').drop()
+    mongo_connection.get_collection('pytest_raw_handshake_job_stage1').drop()
 
 
 @pytest.fixture(scope='session')

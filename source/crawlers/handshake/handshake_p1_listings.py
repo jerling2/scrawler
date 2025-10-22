@@ -6,6 +6,8 @@ from typing import Any
 from crawl4ai import BrowserConfig, CrawlerRunConfig, CacheMode, AsyncWebCrawler, MemoryAdaptiveDispatcher, RateLimiter
 from source.broker import InterProcessGateway, JsonMessageModel, IPGConsumerConfig
 from source.database import HandshakeRawJobListingsRepo
+from source.api import APIRawHandshakeJobStage1
+from source.utilities import zlib_compress
 from source.crawlers.base import CrawlerFactory, CrawlerFactoryConfig
 from source.crawlers.handshake.hooks import create_extract_job_stage1_after_goto_hook
 from source.crawlers.handshake.handshake_auth import HandshakeAuth
@@ -70,6 +72,14 @@ class HandshakeExtractListings:
                 pass
         return
 
+    def push_to_repo(self, url: str, html: str):
+        self.repo.insert_raw_job_listings(url, html)
+    
+    def propogate_message(self, html: str):
+        msg = APIRawHandshakeJobStage1(html)
+        self.broker.send(msg.model, msg.source_topic, msg.payload)
+        pass
+
     async def extract(self, start_page: int, end_page: int, per_page: int):
         urls = [
             self.config.base_url.format(page, per_page) 
@@ -81,12 +91,7 @@ class HandshakeExtractListings:
             rate_limiter=RateLimiter()
         )
         self.auth.login()
-        temp = []
-        failed = []
         async for result in await self.crawler.arun_many(urls, run_config, dispatcher):
-            pass
-            if not result.success:
-                failed.append(result)
-                continue
-            temp.append(result.html)
-        pass
+            if result.success:
+                self.push_to_repo(result.url, result.html)
+                self.propogate_message(result.html)
