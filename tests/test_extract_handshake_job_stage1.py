@@ -12,8 +12,7 @@ from source import (
     HandshakeRawJobListingsRepo,
     MainControlProgram, 
     MCPScrawlerModel,
-    JsonMessageModel,
-    get_api_command_handshake_extract_jobs_stage_1
+    APIExtractHandshakeJobStage1
 )
 
 
@@ -51,7 +50,7 @@ def repo(mongo_connection):
 @pytest.fixture(scope='session')
 def extractor(broker, repo):
     yield HandshakeExtractListings(
-        config=HandshakeExtractListingsConfig.from_env(),
+        config=HandshakeExtractListingsConfig(),
         broker=broker,
         repo=repo
     )
@@ -71,15 +70,12 @@ def mcp(broker):
     signal.signal(signal.SIGALRM, original_handler)
 
 @pytest.fixture()
-def start_extraction_command():
-    return (
-        JsonMessageModel(),
-        'handshake.command.extract-jobs-stage1',
-        get_api_command_handshake_extract_jobs_stage_1()
-    )
+def cmd():
+    cmd = APIExtractHandshakeJobStage1()
+    return (cmd.model, cmd.source_topic, cmd.payload)
 
-def test_init_model(extractor, broker, mcp, start_extraction_command):
-    consumer_config = extractor.get_ipg_consumer_config()
-    broker.set_consumers([consumer_config])
-    broker.send(*start_extraction_command)
+
+def test_extract_handshake_job_stage_1(extractor, broker, mcp, cmd):
+    broker.set_consumers([extractor.consumer_info])
+    broker.send(*cmd)
     mcp.run()
