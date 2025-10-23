@@ -13,8 +13,8 @@ from source import (
     MainControlProgram, 
     MCPScrawlerModel,
     HandshakeExtractor1Codec,
-    TransformRawHandshakeJobStage1,
-    TransformRawHandshakeJobStage1Config,
+    HandshakeTransformer1,
+    HandshakeTransformer1Config,
     StagedHandshakeJobStage1Repo
 )
 
@@ -83,8 +83,8 @@ def e1(broker, r1):
 
 @pytest.fixture(scope='session')
 def t1(broker, r2):
-    return TransformRawHandshakeJobStage1(
-        config=TransformRawHandshakeJobStage1Config(),
+    return HandshakeTransformer1(
+        config=HandshakeTransformer1Config(),
         broker=broker,
         repo=r2
     )

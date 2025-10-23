@@ -8,7 +8,7 @@ from source.database import StagedHandshakeJobStage1Repo
 
 
 @dataclass
-class TransformRawHandshakeJobStage1Config:
+class HandshakeTransformer1Config:
     source_topics = ['raw.handshake.job.stage1.v1']
     codec = HandshakeTransformer1Codec
 
@@ -23,11 +23,11 @@ class TransformRawHandshakeJobStage1Config:
         ).create_crawler()
 
 
-class TransformRawHandshakeJobStage1:
+class HandshakeTransformer1:
 
     def __init__(
         self, 
-        config: TransformRawHandshakeJobStage1Config,
+        config: HandshakeTransformer1Config,
         broker: InterProcessGateway,
         repo: StagedHandshakeJobStage1Repo
     ) -> None:
