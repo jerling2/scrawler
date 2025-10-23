@@ -3,7 +3,8 @@ from source.crawlers.base.types import AfterGotoProtocol
 from playwright.async_api import Page, BrowserContext, Response
 from source.utilities import async_exponential_backoff_with_jitter
 
-def create_extract_job_stage1_after_goto_hook() -> AfterGotoProtocol:
+
+def handshake_extractor_1_hook() -> AfterGotoProtocol:
 
     async def after_goto(page: Page, context: BrowserContext, url: str, response: Response, **kwargs):
         _ = context, url, response, kwargs

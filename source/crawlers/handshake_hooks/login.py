@@ -1,7 +1,7 @@
 from playwright.async_api import Page, BrowserContext
 
 
-def create_login_hook(login_url: str, username: str, password: str, session_storage: str):
+def handshake_login_hook(login_url: str, username: str, password: str, session_storage: str):
 
     async def on_page_context_created(page: Page, context: BrowserContext, **kwargs):
         _ = kwargs

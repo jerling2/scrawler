@@ -1,7 +1,7 @@
 from playwright.async_api import Page, BrowserContext
 
 
-def create_check_auth_hook(auth_url):
+def handshake_check_auth_hook(auth_url):
 
     async def on_page_context_created(page: Page, context: BrowserContext, **kwargs):
         _ = context, kwargs

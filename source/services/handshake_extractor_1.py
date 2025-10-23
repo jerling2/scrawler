@@ -7,8 +7,8 @@ from source.broker import InterProcessGateway, IPGConsumer
 from source.database import HandshakeRawJobListingsRepo
 from source.codec import HandshakeExtractor1Codec, HandshakeTransformer1Codec
 from source.crawlers.base import CrawlerFactory, CrawlerFactoryConfig
-from source.crawlers.handshake.hooks import create_extract_job_stage1_after_goto_hook
-from source.crawlers.handshake.handshake_auth import HandshakeAuth
+from source.crawlers import handshake_extractor_1_hook
+from source.services.handshake_auth import HandshakeAuth
 
 
 @dataclass
@@ -28,7 +28,7 @@ class HandshakeExtractor1Config:
                     storage_state=Path(os.environ['SESSION_STORAGE']) / 'handshake.json'
                 ),
                 hooks={
-                    'after_goto': create_extract_job_stage1_after_goto_hook()
+                    'after_goto': handshake_extractor_1_hook()
                 }
             )
         ).create_crawler()

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from crawl4ai import BrowserConfig
 from source.crawlers.base import CrawlerFactory, CrawlerFactoryConfig
-from source.crawlers.handshake.hooks import create_login_hook, create_check_auth_hook
+from source.crawlers import handshake_login_hook, handshake_check_auth_hook
 
 
 def make_login_crawler_config(login_url: str, username: str, password: str, session_storage: str):
@@ -12,7 +12,7 @@ def make_login_crawler_config(login_url: str, username: str, password: str, sess
             headless=True
         ),
         hooks={
-            'on_page_context_created': create_login_hook(login_url, username, password, session_storage)
+            'on_page_context_created': handshake_login_hook(login_url, username, password, session_storage)
         }
     )
 
@@ -26,7 +26,7 @@ def make_auth_check_crawler_config(auth_url: str, session_storage: str):
             storage_state=session_storage
         ),
         hooks={
-            'on_page_context_created': create_check_auth_hook(auth_url)
+            'on_page_context_created': handshake_check_auth_hook(auth_url)
         }
     )
 
