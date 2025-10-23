@@ -2,7 +2,6 @@ import os
 import asyncio
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 from crawl4ai import BrowserConfig, CrawlerRunConfig, CacheMode, AsyncWebCrawler, MemoryAdaptiveDispatcher, RateLimiter
 from source.broker import InterProcessGateway, IPGConsumer
 from source.database import HandshakeRawJobListingsRepo
@@ -13,7 +12,7 @@ from source.crawlers.handshake.handshake_auth import HandshakeAuth
 
 
 @dataclass
-class HandshakeExtractListingsConfig:
+class HandshakeExtractor1Config:
     topics = ['extract.handshake.job.stage1.v1']
     codec = HandshakeExtractor1Codec
     base_url: str = "https://app.joinhandshake.com/job-search/?page={}&per_page={}"
@@ -35,11 +34,11 @@ class HandshakeExtractListingsConfig:
         ).create_crawler()
     
 
-class HandshakeExtractListings:
+class HandshakeExtractor1:
 
     def __init__(
         self, 
-        config: HandshakeExtractListingsConfig,
+        config: HandshakeExtractor1Config,
         broker: InterProcessGateway, 
         repo: HandshakeRawJobListingsRepo
     ):

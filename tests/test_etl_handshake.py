@@ -2,8 +2,8 @@ import os
 import signal
 import pytest
 from source import (
-    HandshakeExtractListingsConfig,
-    HandshakeExtractListings,
+    HandshakeExtractor1Config,
+    HandshakeExtractor1,
     InterProcessGateway,
     KafkaProducerConfig,
     KafkaConsumerConfig,
@@ -74,8 +74,8 @@ def mcp(broker):
 
 @pytest.fixture(scope='session')
 def e1(broker, r1):
-    return HandshakeExtractListings(
-        config=HandshakeExtractListingsConfig(),
+    return HandshakeExtractor1(
+        config=HandshakeExtractor1Config(),
         broker=broker,
         repo=r1
     )
