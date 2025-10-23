@@ -103,7 +103,3 @@ def test_pipeline_full(e1, t1, broker, mcp, cmd_e1):
     broker.set_consumers([e1.consumer_info, t1.consumer_info])
     broker.send(*cmd_e1)
     mcp.run()
-
-def test_t1(t1, broker, mcp):
-    broker.set_consumers([t1.consumer_info])
-    mcp.run()
