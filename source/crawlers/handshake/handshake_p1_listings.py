@@ -4,10 +4,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from crawl4ai import BrowserConfig, CrawlerRunConfig, CacheMode, AsyncWebCrawler, MemoryAdaptiveDispatcher, RateLimiter
-from source.broker import InterProcessGateway, JsonMessageModel, IPGConsumerConfig
+from source.broker import InterProcessGateway, IPGConsumer
 from source.database import HandshakeRawJobListingsRepo
-from source.api import APIRawHandshakeJobStage1
-from source.utilities import zlib_compress
+from source.codec import HandshakeExtractor1Codec, HandshakeTransformer1Codec
 from source.crawlers.base import CrawlerFactory, CrawlerFactoryConfig
 from source.crawlers.handshake.hooks import create_extract_job_stage1_after_goto_hook
 from source.crawlers.handshake.handshake_auth import HandshakeAuth
@@ -15,8 +14,8 @@ from source.crawlers.handshake.handshake_auth import HandshakeAuth
 
 @dataclass
 class HandshakeExtractListingsConfig:
-    source_topics = ['extract.handshake.job.stage1.v1']
-    msg_model = JsonMessageModel()
+    topics = ['extract.handshake.job.stage1.v1']
+    codec = HandshakeExtractor1Codec
     base_url: str = "https://app.joinhandshake.com/job-search/?page={}&per_page={}"
 
     def get_auth(self) -> HandshakeAuth:
@@ -26,7 +25,7 @@ class HandshakeExtractListingsConfig:
         return CrawlerFactory(
             CrawlerFactoryConfig(
                 browser_config=BrowserConfig(
-                    headless=False,
+                    headless=True,
                     storage_state=Path(os.environ['SESSION_STORAGE']) / 'handshake.json'
                 ),
                 hooks={
@@ -51,34 +50,22 @@ class HandshakeExtractListings:
         self.crawler = config.get_crawler()
 
     @property
-    def consumer_info(self) -> IPGConsumerConfig:
-        return IPGConsumerConfig(
-            topics=self.config.source_topics,
-            model=self.config.msg_model,
+    def consumer_info(self) -> IPGConsumer:
+        return IPGConsumer(
+            topics=self.config.topics,
+            codec=self.config.codec,
             notify=self.on_notify
         )
 
-    def on_notify(self, payload: dict[str, Any]) -> None:
-        match payload.get('action', None):
-            case 'START_EXTRACTION':
-                if isinstance((params := payload.get('params', None)), dict)\
-                and isinstance((start_page := params.get('start_page', None)), int) \
-                and isinstance((end_page := params.get('end_page', None)), int) \
-                and isinstance((per_page := params.get('per_page', None)), int) \
-                and 1 <= start_page <= end_page \
-                and 1 <= per_page <= 50:
-                    asyncio.run(self.extract(start_page, end_page, per_page))
+    def on_notify(self, message: HandshakeExtractor1Codec) -> None:
+        match message.action:
+            case 'START_EXTRACT':
+                asyncio.run(self.extract(
+                    message.start_page, message.end_page, message.per_page
+                ))
             case _:
                 pass
         return
-
-    def push_to_repo(self, url: str, html: str):
-        self.repo.insert_raw_job_listings(url, html)
-    
-    def propogate_message(self, html: str):
-        msg = APIRawHandshakeJobStage1(html)
-        self.broker.send(msg.model, msg.source_topic, msg.payload)
-        pass
 
     async def extract(self, start_page: int, end_page: int, per_page: int):
         urls = [
@@ -95,3 +82,10 @@ class HandshakeExtractListings:
             if result.success:
                 self.push_to_repo(result.url, result.html)
                 self.propogate_message(result.html)
+
+    def push_to_repo(self, url: str, html: str):
+        self.repo.insert_raw_job_listings(url, html)
+    
+    def propogate_message(self, html: str):
+        message = HandshakeTransformer1Codec(html)
+        self.broker.send(HandshakeTransformer1Codec, HandshakeTransformer1Codec.TOPIC, message)

@@ -12,7 +12,10 @@ from source import (
     HandshakeRawJobListingsRepo,
     MainControlProgram, 
     MCPScrawlerModel,
-    APIExtractHandshakeJobStage1
+    HandshakeExtractor1Codec,
+    TransformRawHandshakeJobStage1,
+    TransformRawHandshakeJobStage1Config,
+    StagedHandshakeJobStage1Repo
 )
 
 
@@ -41,23 +44,22 @@ def mongo_connection():
 
 
 @pytest.fixture(scope='session')
-def repo(mongo_connection):
-    repo = HandshakeRawJobListingsRepo('pytest_raw_handshake_job_stage1', mongo_connection)
-    yield repo
+def r1(mongo_connection):
+    r1 = HandshakeRawJobListingsRepo('pytest_raw_handshake_job_stage1', mongo_connection)
+    yield r1
     mongo_connection.get_collection('pytest_raw_handshake_job_stage1').drop()
 
 
 @pytest.fixture(scope='session')
-def extractor(broker, repo):
-    yield HandshakeExtractListings(
-        config=HandshakeExtractListingsConfig(),
-        broker=broker,
-        repo=repo
-    )
+def r2(mongo_connection):
+    r2 = StagedHandshakeJobStage1Repo('pytest_staged_handshake_job_stage1', mongo_connection)
+    yield r2
+    mongo_connection.get_collection('pytest_raw_handshake_job_stage1').drop()
 
-@pytest.fixture(scope='session')
+
+@pytest.fixture()
 def mcp(broker):
-    SECONDS_UNTIL_PREEMPT = 15
+    SECONDS_UNTIL_PREEMPT = 30 #< An estimate of how long the consumers need to be listening.
     pid = os.getpid()
     def signal_alarm_handler(signum, frame):
         _ = signum, frame
@@ -69,13 +71,39 @@ def mcp(broker):
     signal.alarm(0)
     signal.signal(signal.SIGALRM, original_handler)
 
+
+@pytest.fixture(scope='session')
+def e1(broker, r1):
+    return HandshakeExtractListings(
+        config=HandshakeExtractListingsConfig(),
+        broker=broker,
+        repo=r1
+    )
+
+
+@pytest.fixture(scope='session')
+def t1(broker, r2):
+    return TransformRawHandshakeJobStage1(
+        config=TransformRawHandshakeJobStage1Config(),
+        broker=broker,
+        repo=r2
+    )
+
 @pytest.fixture()
-def cmd():
-    cmd = APIExtractHandshakeJobStage1()
-    return (cmd.model, cmd.source_topic, cmd.payload)
+def cmd_e1():
+    message = HandshakeExtractor1Codec(
+        start_page=1,
+        end_page=5,
+        per_page=50
+    )
+    return (HandshakeExtractor1Codec, HandshakeExtractor1Codec.TOPIC, message)
 
 
-def test_extract_handshake_job_stage_1(extractor, broker, mcp, cmd):
-    broker.set_consumers([extractor.consumer_info])
-    broker.send(*cmd)
+def test_pipeline_full(e1, t1, broker, mcp, cmd_e1):
+    broker.set_consumers([e1.consumer_info, t1.consumer_info])
+    broker.send(*cmd_e1)
+    mcp.run()
+
+def test_t1(t1, broker, mcp):
+    broker.set_consumers([t1.consumer_info])
     mcp.run()

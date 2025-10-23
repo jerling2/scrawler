@@ -1,4 +1,4 @@
-from .broker_interface import MessageInterface, IPGConsumerConfig
+from .ipg_interface import IPGConsumerI, IPGProtocol, IPGConsumer
 
 
-__all__ = ['MessageInterface', 'IPGConsumerConfig']
+__all__ = ['IPGConsumerI', 'IPGProtocol', 'IPGConsumer']
