@@ -9,13 +9,13 @@ from source import (
     KafkaConsumerConfig,
     KafkaConnectionConfig,
     MongoConnection,
-    HandshakeRawJobListingsRepo,
+    HandshakeRepoE1,
     MainControlProgram, 
     MCPScrawlerModel,
     HandshakeExtractor1Codec,
     HandshakeTransformer1,
     HandshakeTransformer1Config,
-    StagedHandshakeJobStage1Repo
+    HandshakeRepoT1
 )
 
 
@@ -45,14 +45,14 @@ def mongo_connection():
 
 @pytest.fixture(scope='session')
 def r1(mongo_connection):
-    r1 = HandshakeRawJobListingsRepo('pytest_raw_handshake_job_stage1', mongo_connection)
+    r1 = HandshakeRepoE1('pytest_raw_handshake_job_stage1', mongo_connection)
     yield r1
     mongo_connection.get_collection('pytest_raw_handshake_job_stage1').drop()
 
 
 @pytest.fixture(scope='session')
 def r2(mongo_connection):
-    r2 = StagedHandshakeJobStage1Repo('pytest_staged_handshake_job_stage1', mongo_connection)
+    r2 = HandshakeRepoT1('pytest_staged_handshake_job_stage1', mongo_connection)
     yield r2
     mongo_connection.get_collection('pytest_raw_handshake_job_stage1').drop()
 

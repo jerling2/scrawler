@@ -12,7 +12,7 @@ class HandshakeRawJobListingsEntity:
 @dataclass(frozen=True)
 class HandshakeRawJobListingsModel:
     source: str = 'handshake'
-    compression_alg: str = 'zlib'
+    codec: str = 'zlib'
 
     def make_document(
             self,
@@ -25,6 +25,6 @@ class HandshakeRawJobListingsModel:
             'source': self.source,
             'created_at': created_at,
             'url': url,
-            'compression_alg': self.compression_alg,
+            'compression_alg': self.codec,
             'html_payload': html_payload
         }

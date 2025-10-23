@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from crawl4ai import BrowserConfig, CrawlerRunConfig, CacheMode, AsyncWebCrawler, MemoryAdaptiveDispatcher, RateLimiter
 from source.broker import InterProcessGateway, IPGConsumer
-from source.database import HandshakeRawJobListingsRepo
+from source.database import HandshakeRepoE1
 from source.codec import HandshakeExtractor1Codec, HandshakeTransformer1Codec
 from source.crawlers.base import CrawlerFactory, CrawlerFactoryConfig
 from source.crawlers import handshake_extractor_1_hook
@@ -40,7 +40,7 @@ class HandshakeExtractor1:
         self, 
         config: HandshakeExtractor1Config,
         broker: InterProcessGateway, 
-        repo: HandshakeRawJobListingsRepo
+        repo: HandshakeRepoE1
     ):
         self.config = config
         self.broker = broker
@@ -83,7 +83,7 @@ class HandshakeExtractor1:
                 self.propogate_message(result.html)
 
     def push_to_repo(self, url: str, html: str):
-        self.repo.insert_raw_job_listings(url, html)
+        self.repo.insert(url, html)
     
     def propogate_message(self, html: str):
         message = HandshakeTransformer1Codec(html)

@@ -1,5 +1,5 @@
-from .handshake_raw_job_listings_repo import HandshakeRawJobListingsRepo
-from .staged_handshake_job_stage1_repo import StagedHandshakeJobStage1Repo
+from .handshake_repo_e1 import HandshakeRepoE1
+from .handshake_repo_t1 import HandshakeRepoT1
 
 
-__all__ = ['HandshakeRawJobListingsRepo', 'StagedHandshakeJobStage1Repo']
+__all__ = ['HandshakeRepoE1', 'HandshakeRepoT1']

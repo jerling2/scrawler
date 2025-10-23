@@ -4,7 +4,7 @@ from crawl4ai import AsyncWebCrawler, BrowserConfig
 from source.broker import InterProcessGateway, IPGConsumer
 from source.codec import HandshakeTransformer1Codec
 from source.crawlers import CrawlerFactory, CrawlerFactoryConfig
-from source.database import StagedHandshakeJobStage1Repo
+from source.database import HandshakeRepoT1
 
 
 @dataclass
@@ -29,7 +29,7 @@ class HandshakeTransformer1:
         self, 
         config: HandshakeTransformer1Config,
         broker: InterProcessGateway,
-        repo: StagedHandshakeJobStage1Repo
+        repo: HandshakeRepoT1
     ) -> None:
         self.config = config
         self.broker = broker

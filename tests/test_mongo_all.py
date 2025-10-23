@@ -1,5 +1,5 @@
 import pytest
-from source import MongoConnection, HandshakeRawJobListingsRepo
+from source import MongoConnection, HandshakeRepoE1
 
 
 @pytest.fixture(scope='session')
@@ -11,7 +11,7 @@ def conn():
 
 @pytest.fixture(scope='session')
 def repo(conn):
-    repo = HandshakeRawJobListingsRepo('pytest', conn)
+    repo = HandshakeRepoE1('pytest', conn)
     yield repo
     conn.get_collection('pytest').drop()
     
@@ -22,7 +22,7 @@ def test_init_repo(repo):
     assert repo
 
 def test_repo_insert_document(repo):
-    repo.insert_raw_job_listings(
+    repo.insert(
         url='https://example.com',
         html="<html>test</hmtl>"
     )
