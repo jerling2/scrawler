@@ -22,6 +22,9 @@ class MCPScrawlerModel:
         )
     )
 
+    def setup(self):
+        pass
+
     def teardown(self):
         self.broker.close()
 

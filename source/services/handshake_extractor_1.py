@@ -76,7 +76,7 @@ class HandshakeExtractor1:
             max_session_permit=5,
             rate_limiter=RateLimiter()
         )
-        self.auth.login()
+        await self.auth.login()
         async for result in await self.crawler.arun_many(urls, run_config, dispatcher):
             if result.success:
                 self.push_to_repo(result.url, result.html)

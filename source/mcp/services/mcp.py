@@ -24,5 +24,11 @@ class MainControlProgram:
 
     def run(self):
         self._attach_signal_handlers()
-        self.model.run_loop()
-        self._restore_signal_handlers()
+        try:
+            self.model.run_loop()
+        except Exception as e:
+            print(f'Uncaught exception: {e}')
+            self.model.teardown()
+            raise
+        finally:
+            self._restore_signal_handlers()

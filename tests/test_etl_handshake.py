@@ -15,7 +15,10 @@ from source import (
     HandshakeExtractor1Codec,
     HandshakeTransformer1,
     HandshakeTransformer1Config,
-    HandshakeRepoT1
+    HandshakeRepoT1,
+    HandshakeExtractor2,
+    HandshakeExtractor2Config,
+    HandshakeRepoE2
 )
 
 
@@ -57,15 +60,19 @@ def r2(mongo_connection):
     mongo_connection.get_collection('pytest_raw_handshake_job_stage1').drop()
 
 
+@pytest.fixture(scope='session')
+def repo_e2(mongo_connection):
+    repo_e2 = HandshakeRepoE2('pytest_raw_handshake_job_stage2', mongo_connection)
+    yield repo_e2
+    mongo_connection.get_collection('pytest_raw_handshake_job_stage2').drop()
+
+
 @pytest.fixture()
 def mcp(broker):
-    SECONDS_UNTIL_PREEMPT = 30 #< An estimate of how long the consumers need to be listening.
-    pid = os.getpid()
     def signal_alarm_handler(signum, frame):
         _ = signum, frame
-        os.kill(pid, signal.SIGINT)
+        os.kill(os.getpid(), signal.SIGINT)
     original_handler = signal.signal(signal.SIGALRM, signal_alarm_handler)
-    signal.alarm(SECONDS_UNTIL_PREEMPT)
     mcp = MainControlProgram(MCPScrawlerModel(broker=broker))
     yield mcp
     signal.alarm(0)
@@ -89,6 +96,16 @@ def t1(broker, r2):
         repo=r2
     )
 
+
+@pytest.fixture(scope='session')
+def e2(broker, repo_e2):
+    return HandshakeExtractor2(
+        config=HandshakeExtractor2Config(),
+        broker=broker,
+        repo=repo_e2
+    )
+
+
 @pytest.fixture()
 def cmd_e1():
     message = HandshakeExtractor1Codec(
@@ -99,7 +116,17 @@ def cmd_e1():
     return (HandshakeExtractor1Codec, HandshakeExtractor1Codec.TOPIC, message)
 
 
-def test_pipeline_full(e1, t1, broker, mcp, cmd_e1):
-    broker.set_consumers([e1.consumer_info, t1.consumer_info])
+def test_pipeline_full(e1, t1, e2, broker, mcp, cmd_e1):
+    SECONDS_UNTIL_PREEMPT = 60 #< this is how long the consumers will listen for messages
+    broker.set_consumers([e1.consumer_info, t1.consumer_info, e2.consumer_info])
     broker.send(*cmd_e1)
+    signal.alarm(SECONDS_UNTIL_PREEMPT)
     mcp.run()
+    e2.flush() #< This could be handled in the mcp teardown script.
+
+def test_e2(e2, broker, mcp):
+    SECONDS_UNTIL_PREEMPT = 30
+    broker.set_consumers([e2.consumer_info])
+    signal.alarm(SECONDS_UNTIL_PREEMPT)
+    mcp.run()
+    e2.flush()

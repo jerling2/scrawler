@@ -46,10 +46,10 @@ class HandshakeAuthConfig:
         return make_auth_check_crawler_config(self.auth_url, self.session_storage)
 
     @classmethod
-    def from_env(cls):
+    def from_env(cls, session_name: str='handshake'):
         username = os.environ['USER_APP_HANDSHAKE_COM']
         password = os.environ['PASS_APP_HANDSHAKE_COM']
-        session_storage = str(Path(os.environ['SESSION_STORAGE']) / 'handshake.json')
+        session_storage = str(Path(os.environ['SESSION_STORAGE']) / f'{session_name}.json')
         return cls(username, password, session_storage)
 
 
