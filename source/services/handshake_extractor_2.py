@@ -25,7 +25,7 @@ class HandshakeExtractor2Config:
     def get_crawler(self) -> AsyncWebCrawler:
         return CrawlerFactory(CrawlerFactoryConfig(
             BrowserConfig(
-                headless=False,
+                headless=True,
                 storage_state=Path(os.environ['SESSION_STORAGE']) / f'{self.SESSION_NAME}.json'
             ),
             hooks={
@@ -55,7 +55,7 @@ class HandshakeExtractor2:
     @property
     def extraction_strategy(self) -> JsonCssExtractionStrategy:
         return JsonCssExtractionStrategy({
-            'baseSelector': 'main',
+            'baseSelector': 'body',
             'baseFields': [{
                 'name': 'main_html',
                 'type': 'html'

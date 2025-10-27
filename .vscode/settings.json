@@ -1,7 +1,7 @@
 {
     // --- Python Testing / pytest ---
     "python.testing.pytestEnabled": true,
-    "python.testing.pytestArgs": ["tests"],
+    "python.testing.pytestArgs": ["-s", "tests"],
     // --- Python & Linting ---
     "python.linting.enabled": false,
     "python.linting.pylintEnabled": true, // enable Pylint

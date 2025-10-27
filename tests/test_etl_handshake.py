@@ -18,7 +18,10 @@ from source import (
     HandshakeRepoT1,
     HandshakeExtractor2,
     HandshakeExtractor2Config,
-    HandshakeRepoE2
+    HandshakeRepoE2,
+    HandshakeRepoT2,
+    HandshakeTransformer2,
+    HandshakeTransformer2Config
 )
 
 
@@ -67,6 +70,13 @@ def repo_e2(mongo_connection):
     mongo_connection.get_collection('pytest_raw_handshake_job_stage2').drop()
 
 
+@pytest.fixture(scope='session')
+def repo_t2(mongo_connection):
+    repo_t2 = HandshakeRepoT2('pytest_staged_handshake_job_stage2', mongo_connection)
+    yield repo_t2
+    mongo_connection.get_collection('pytest_staged_handshake_job_stage2').drop()
+
+
 @pytest.fixture()
 def mcp(broker):
     def signal_alarm_handler(signum, frame):
@@ -106,6 +116,15 @@ def e2(broker, repo_e2):
     )
 
 
+@pytest.fixture(scope='session')
+def t2(broker, repo_t2):
+    return HandshakeTransformer2(
+        config=HandshakeTransformer2Config(),
+        broker=broker,
+        repo=repo_t2
+    )
+
+
 @pytest.fixture()
 def cmd_e1():
     message = HandshakeExtractor1Codec(
@@ -117,12 +136,13 @@ def cmd_e1():
 
 
 def test_pipeline_full(e1, t1, e2, broker, mcp, cmd_e1):
-    SECONDS_UNTIL_PREEMPT = 60 #< this is how long the consumers will listen for messages
+    SECONDS_UNTIL_PREEMPT = 600 #< this is how long the consumers will listen for messages
     broker.set_consumers([e1.consumer_info, t1.consumer_info, e2.consumer_info])
     broker.send(*cmd_e1)
     signal.alarm(SECONDS_UNTIL_PREEMPT)
     mcp.run()
     e2.flush() #< This could be handled in the mcp teardown script.
+
 
 def test_e2(e2, broker, mcp):
     SECONDS_UNTIL_PREEMPT = 30
@@ -130,3 +150,10 @@ def test_e2(e2, broker, mcp):
     signal.alarm(SECONDS_UNTIL_PREEMPT)
     mcp.run()
     e2.flush()
+
+
+def test_t2(t2, broker, mcp):
+    SECONDS_UNTIL_PREEMPT = 15
+    broker.set_consumers([t2.consumer_info])
+    signal.alarm(SECONDS_UNTIL_PREEMPT)
+    mcp.run()
