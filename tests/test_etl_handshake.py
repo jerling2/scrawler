@@ -135,14 +135,13 @@ def cmd_e1():
     return (HandshakeExtractor1Codec, HandshakeExtractor1Codec.TOPIC, message)
 
 
-def test_pipeline_full(e1, t1, e2, broker, mcp, cmd_e1):
-    SECONDS_UNTIL_PREEMPT = 600 #< this is how long the consumers will listen for messages
-    broker.set_consumers([e1.consumer_info, t1.consumer_info, e2.consumer_info])
-    broker.send(*cmd_e1)
+def test_pipeline_full(e1, t1, e2, t2, broker, mcp, cmd_e1):
+    SECONDS_UNTIL_PREEMPT = 60 #< this is how long the consumers will listen for messages
+    broker.set_consumers([e1.consumer_info, t1.consumer_info, e2.consumer_info, t2.consumer_info])
+    # broker.send(*cmd_e1)
     signal.alarm(SECONDS_UNTIL_PREEMPT)
     mcp.run()
     e2.flush() #< This could be handled in the mcp teardown script.
-
 
 def test_e2(e2, broker, mcp):
     SECONDS_UNTIL_PREEMPT = 30

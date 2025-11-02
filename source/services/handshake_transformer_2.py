@@ -124,9 +124,10 @@ class HandshakeTransformer2:
                 pass
         return
 
-    def process(self, content: dict[str, str], created_at: datetime) -> HandshakeLoader1Codec:
+    def process(self, url: str, content: dict[str, str], created_at: datetime) -> HandshakeLoader1Codec:
         output = {}
         glance = ProcessAtAGlance.process(content['at_a_glance'])
+        output['url'] = url
         output['overview'] = process_about_markdown(content['about_md'])
         output['documents'] = process_documents(content['documents'])
         output['company'] = lower_and_strip(content['company'])
@@ -160,7 +161,7 @@ class HandshakeTransformer2:
             return
         await self.crawler.close()
         content['about_md'] = markdown.markdown
-        msg = self.process(content, created_at)
+        msg = self.process(url, content, created_at)
         self.repo.insert(
             msg.overview,
             msg.posted_at,

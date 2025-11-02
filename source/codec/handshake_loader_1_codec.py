@@ -10,6 +10,7 @@ from dataclasses import dataclass
 class HandshakeLoader1Codec:
     TOPIC = 'load.handshake.job.v1'
 
+    url: str
     overview: str
     posted_at: datetime
     apply_by: datetime
@@ -41,6 +42,7 @@ class HandshakeLoader1Codec:
                 'apply_by': str(self.apply_by),   
             },
             'primitives': {
+                'url': self.url,
                 'documents': self.documents,
                 'company': self.company,
                 'industry': self.industry,
