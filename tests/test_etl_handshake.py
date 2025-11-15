@@ -143,15 +143,35 @@ def test_pipeline_full(e1, t1, e2, t2, broker, mcp, cmd_e1):
     mcp.run()
     e2.flush() #< This could be handled in the mcp teardown script.
 
+
+def test_e1(e1, cmd_e1, broker, mcp):
+    # Launch E1 for Handshake which extracts relevant jobs from Handshake.com.
+    # Pipes to T1
+    SECONDS_UNTIL_PREEMPT = 30
+    broker.set_consumers([e1.consumer_info])
+    broker.send(*cmd_e1)
+    signal.alarm(SECONDS_UNTIL_PREEMPT)
+    mcp.run()
+
+def test_t1(t1, broker, mcp):
+    # Transform data from E1. Launches many E2 tasks.
+    SECONDS_UNTIL_PREEMPT = 30
+    broker.set_consumers([t1.consumer_info])
+    signal.alarm(SECONDS_UNTIL_PREEMPT)
+    mcp.run()
+
 def test_e2(e2, broker, mcp):
+    # Extract job listing pages from app.handshake.com.
+    # Pipes to T2.
     SECONDS_UNTIL_PREEMPT = 30
     broker.set_consumers([e2.consumer_info])
     signal.alarm(SECONDS_UNTIL_PREEMPT)
     mcp.run()
     e2.flush()
 
-
 def test_t2(t2, broker, mcp):
+    # Final transform of handshake data. 
+    # Pipes to L1.
     SECONDS_UNTIL_PREEMPT = 15
     broker.set_consumers([t2.consumer_info])
     signal.alarm(SECONDS_UNTIL_PREEMPT)

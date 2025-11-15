@@ -18,12 +18,12 @@ class HandshakeLoader1Codec:
     company: str
     industry: str
     role: str
-    is_internal_apply: str
+    apply_type: str
     wage: list[int] | None
     location_type: list[str]
     location: str
     job_type: str
-    is_internship: bool
+    employment_type: str
     action: str = 'START_LOAD'
 
     @property
@@ -47,12 +47,12 @@ class HandshakeLoader1Codec:
                 'company': self.company,
                 'industry': self.industry,
                 'role': self.role,
-                'is_internal_apply': self.is_internal_apply,
+                'apply_type': self.apply_type,
                 'wage': self.wage,
                 'location_type': self.location_type,
                 'location': self.location,
                 'job_type': self.job_type,
-                'is_internship': self.is_internship,
+                'employment_type': self.employment_type,
                 'action': self.action
             }
         }
