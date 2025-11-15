@@ -44,25 +44,14 @@ class HandshakeTransformer2:
                 pass
         return
 
-    async def transform(self, url: str, html: str, created_at: datetime):
-        clean = HandshakeCleanDataContainer(
-            HandshakeRawDataContainer(html),
-            created_at
-        ).get_all()
-        message = HandshakeLoader1Codec(
-            url=url,
-            overview=clean['about'],
-            posted_at=clean['posted_at'],
-            apply_by=clean['apply_by'],
-            documents=clean['documents'],
-            company=clean['company'],
-            industry=clean['industry'],
-            role=clean['position'],
-            apply_type=clean['apply_type'],
-            wage=clean['wage'],
-            location_type=clean['location_type'],
-            location=clean['location'],
-            job_type=clean['job_type'],
-            employment_type=clean['employment_type']
-        )
+    async def transform(self, url: str, html: str, scraped_at: datetime):
+        raw_container = HandshakeRawDataContainer(html)
+        clean_container = HandshakeCleanDataContainer(raw_container, scraped_at)
+        clean_data = {
+            **clean_container.get_all(),
+            'scraped_at': scraped_at,
+            'url': url
+        }
+        message = HandshakeLoader1Codec(clean_data)
+        self.repo.insert(clean_data)
         self.broker.send(HandshakeLoader1Codec, HandshakeLoader1Codec.TOPIC, message)

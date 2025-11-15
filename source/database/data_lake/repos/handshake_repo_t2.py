@@ -1,37 +1,38 @@
 from bson.objectid import ObjectId
 from dataclasses import dataclass
+from typing import TypedDict
 from datetime import datetime
-from typing import Any
+from pydantic import TypeAdapter, ValidationError
 from source.database.data_lake.connections import MongoConnection
 
 
 @dataclass(frozen=True)
 class HandshakeRepoT2Model:
-    SOURCE = 'handshake'
+
+    class T2RepoData(TypedDict):
+        about: str | None
+        apply_by: datetime | None
+        apply_type: str | None
+        company: str | None
+        documents: list[str]
+        employment_type: str | None
+        industry: str | None
+        job_type: str | None
+        location: str | None
+        location_type: list[str]
+        position: str | None
+        posted_at: datetime | None
+        wage: list[int] | None
+        url: str
+
+    TA = TypeAdapter(T2RepoData)
 
     @classmethod
-    def make_document(cls, created_at: datetime, overview: str,
-        posted_at: datetime, apply_by: datetime, documents: list[str],
-        company: str, industry: str, role: str, is_internal_apply: bool,
-        wage: list[int, int] | None, location_type: list[str],
-        location: str, job_type: str, is_internship: bool) -> dict[str, Any]:
-        return {
-            'source': cls.SOURCE,
-            'created_at': created_at,
-            'overview': overview,
-            'posted_at': posted_at,
-            'apply_by': apply_by,   
-            'documents': documents,
-            'company': company,
-            'industry': industry,
-            'role': role,
-            'is_internal_apply': is_internal_apply,
-            'wage': wage,
-            'location_type': location_type,
-            'location': location,
-            'job_type': job_type,
-            'is_internship': is_internship,
-        }
+    def validate(cls, t2_repo_data: T2RepoData) -> T2RepoData:
+        try:
+            return cls.TA.validate_python(t2_repo_data)
+        except ValidationError:
+            raise ValueError
 
 
 class HandshakeRepoT2:
@@ -41,27 +42,10 @@ class HandshakeRepoT2:
         self.conn = conn
         self.model = HandshakeRepoT2Model
 
-    def insert(self, overview: str, posted_at: datetime, 
-        apply_by: datetime, documents: list[str], company: str, 
-        industry: str, role: str, is_internal_apply: bool,
-        wage: list[int, int] | None, location_type: list[str],
-        location: str, job_type: str, is_internship: bool) -> ObjectId:
+    def insert(self, t2_data: HandshakeRepoT2Model.T2RepoData) -> ObjectId:
         collection = self.conn.get_collection(self.collection_name)
-        document = self.model.make_document(
-            created_at=datetime.now(),
-            overview=overview,
-            posted_at=posted_at,
-            apply_by=apply_by,
-            documents=documents,
-            company=company,
-            industry=industry,
-            role=role,
-            is_internal_apply=is_internal_apply,
-            wage=wage,
-            location_type=location_type,
-            location=location,
-            job_type=job_type,
-            is_internship=is_internship
-        )
-        result = collection.insert_one(document)
+        result = collection.insert_one({
+            **self.model.validate(t2_data),
+            'created_at': datetime.now()
+        })
         return result.inserted_id
