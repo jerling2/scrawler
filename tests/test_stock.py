@@ -14,6 +14,9 @@ class CItem(TypedDict):
 class DItem(TypedDict):
     d: NotRequired[str]
 
+class EItem(TypedDict):
+    f: str
+
 class ABItem(AItem, BItem):
     pass
 
@@ -35,12 +38,15 @@ def test_stock():
     b_item = stock.collect(BItem)
     c_item = stock.collect(CItem)
     d_item = stock.collect(DItem)
+    e_item = stock.collect(EItem)
     ab_item = stock.collect(ABItem)
+
 
     assert a_item == {'a': A_VAL}
     assert b_item == {'b': B_VAL}
     assert c_item == {'c': C_VAL}
     assert d_item == {}
+    assert e_item is None
     assert ab_item == {
         'a': A_VAL,
         'b': B_VAL
