@@ -80,7 +80,7 @@ class HandshakeLoader1Codec:
         return json.dumps(message.payload).encode('utf-8')
 
     @staticmethod
-    def _decompress_about(serial_props: HandshakeLoader1Codec.SerialProps) -> str:
+    def _decompress_about(serial_props: HandshakeLoader1Codec.SerializableProps) -> str:
         about_compressed_str = serial_props['about']
         about_compressed_b64 = base64.b64decode(about_compressed_str)
         about_bytes = zlib.decompress(about_compressed_b64)
