@@ -163,7 +163,7 @@ def test_t1(t1, broker, mcp):
 def test_e2(e2, broker, mcp):
     # Extract job listing pages from app.handshake.com.
     # Pipes to T2.
-    SECONDS_UNTIL_PREEMPT = 30
+    SECONDS_UNTIL_PREEMPT = 90
     broker.set_consumers([e2.consumer_info])
     signal.alarm(SECONDS_UNTIL_PREEMPT)
     mcp.run()
@@ -172,7 +172,7 @@ def test_e2(e2, broker, mcp):
 def test_t2(t2, broker, mcp):
     # Final transform of handshake data. 
     # Pipes to L1.
-    SECONDS_UNTIL_PREEMPT = 15
+    SECONDS_UNTIL_PREEMPT = 45
     broker.set_consumers([t2.consumer_info])
     signal.alarm(SECONDS_UNTIL_PREEMPT)
     mcp.run()

@@ -1,8 +1,7 @@
-import re
-import json
 import asyncio
 from datetime import datetime
 from dataclasses import dataclass
+from source.utilities import Stock
 from source.broker import InterProcessGateway, IPGConsumer
 from source.codec import HandshakeTransformer2Codec, HandshakeLoader1Codec
 from source.database import HandshakeRepoT2
@@ -52,6 +51,8 @@ class HandshakeTransformer2:
             'scraped_at': scraped_at,
             'url': url
         }
-        message = HandshakeLoader1Codec(clean_data)
+        stock = Stock(clean_data)
+        message_props = stock.collect(HandshakeLoader1Codec.Props)
+        message = HandshakeLoader1Codec(**message_props)
         self.repo.insert(clean_data)
         self.broker.send(HandshakeLoader1Codec, HandshakeLoader1Codec.TOPIC, message)
