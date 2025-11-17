@@ -5,10 +5,6 @@ volumes/
 sessions/
 !sessions/README.md
 
-# Ignore Sensitive Scrapped Data
-storage/
-!storage/README.md
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
