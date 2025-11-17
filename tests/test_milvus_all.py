@@ -1,8 +1,13 @@
 import pytest
 import time
 import random
-from source.utilities.embedding.embedder import SupportedEmbedding
-from source import MilvusApplicationsModel, MilvusApplicationEntity, MilvusConnection, MilvusApplicationsRepo
+from source import (
+    MilvusApplicationsModel,
+    MilvusApplicationEntity,
+    MilvusConnection,
+    MilvusApplicationsRepo,
+    SupportedEmbedding
+)
 
 
 WAIT_FOR_WRITE = 1 # seconds

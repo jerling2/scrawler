@@ -1,8 +1,7 @@
 import pytest
 import asyncio
 from dotenv import load_dotenv
-from source.utilities.embedding.chunk import chunk_text_with_overlap
-from source.utilities.embedding.embedder import EmbedderManager, SupportedEmbedding
+from source import chunk_text_with_overlap, EmbedderManager, SupportedEmbedding
 
 
 @pytest.fixture(scope="session", autouse=True)
