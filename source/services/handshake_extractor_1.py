@@ -11,7 +11,7 @@ from source.crawlers import handshake_extractor_1_hook
 from source.services.handshake_auth import HandshakeAuth
 
 
-@dataclass
+@dataclass(frozen=True)
 class HandshakeExtractor1Config:
     topics = ['extract.handshake.job.stage1.v1']
     codec = HandshakeExtractor1Codec
@@ -38,9 +38,9 @@ class HandshakeExtractor1:
 
     def __init__(
         self, 
-        config: HandshakeExtractor1Config,
         broker: InterProcessGateway, 
-        repo: HandshakeRepoE1
+        repo: HandshakeRepoE1,
+        config: HandshakeExtractor1Config = HandshakeExtractor1Config(),
     ):
         self.config = config
         self.broker = broker

@@ -3,6 +3,7 @@ from source.mcp.interfaces import MCPIterface
 
 
 class MainControlProgram:
+    """ General purpose container that runs a MCP model """
 
     def __init__(self, model: MCPIterface) -> None:
         self.model = self._validate_model(model)
