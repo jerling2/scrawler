@@ -30,6 +30,7 @@ class MainControlProgram:
     def run(self):
         self._attach_signal_handlers()
         try:
+            self.model.setup()
             self.model.run_loop()
         except Exception as e:
             print(f'Uncaught exception: {e}')
