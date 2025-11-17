@@ -36,7 +36,11 @@ class HandshakeExtractor2Config:
 
 class HandshakeExtractor2:
 
-    def __init__(self, config: HandshakeExtractor2Config, broker: InterProcessGateway, repo: HandshakeRepoE2):
+    def __init__(self,
+            broker: InterProcessGateway,
+            repo: HandshakeRepoE2,
+            config: HandshakeExtractor2Config = HandshakeExtractor2Config()
+        ):
         self.config = config
         self.crawler = config.get_crawler()
         self.auth = config.get_auth()
