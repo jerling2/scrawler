@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from source.mcp.interfaces import MCPIterface
 from source.broker import (
     InterProcessGateway,
     KafkaConnectionConfig,
@@ -8,7 +9,7 @@ from source.broker import (
 
 
 @dataclass(frozen=True)
-class MCPScrawlerModel:
+class MCPScrawlerModel(MCPIterface):
     broker: InterProcessGateway = \
     InterProcessGateway(
         config=KafkaConnectionConfig(

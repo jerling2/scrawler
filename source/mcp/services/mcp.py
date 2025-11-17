@@ -5,8 +5,13 @@ from source.mcp.interfaces import MCPIterface
 class MainControlProgram:
 
     def __init__(self, model: MCPIterface) -> None:
-        self.model = model
+        self.model = self._validate_model(model)
         self.signal_handler_context = {}
+
+    def _validate_model(self, model: MCPIterface) -> MCPIterface:
+        if isinstance(model, MCPIterface):
+            return model
+        raise AssertionError('Error: expected model to be an instance of MCPIterface')
 
     def _exit_gracefully(self, signum, frame):
         _ = signum, frame
