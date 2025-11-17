@@ -4,7 +4,8 @@ import pytest
 from source import (
     MainControlProgram, 
     MCPScrawlerModel,
-    MCPHandshakeExtractor1Model
+    MCPHandshakeExtractor1Model,
+    MCPHandshakeTransfomer1Model
 )
 
 @pytest.fixture()
@@ -37,6 +38,19 @@ def test_mcp_hse1_model(signal_alarm_handler):
     UNTIL_PREEMPT = 5
     original_handler = signal.signal(signal.SIGALRM, signal_alarm_handler)
     mcp = MainControlProgram(MCPHandshakeExtractor1Model())
+    signal.alarm(UNTIL_PREEMPT)
+    try:
+        mcp.run()
+    except:
+        raise
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, original_handler)
+
+def test_mcp_hst1_model(signal_alarm_handler):
+    UNTIL_PREEMPT = 30
+    original_handler = signal.signal(signal.SIGALRM, signal_alarm_handler)
+    mcp = MainControlProgram(MCPHandshakeTransfomer1Model())
     signal.alarm(UNTIL_PREEMPT)
     try:
         mcp.run()

@@ -22,10 +22,16 @@ class HandshakeRepoT1Model:
 
 class HandshakeRepoT1:
 
-    def __init__(self, collection_name: str, conn: MongoConnection) -> None:
+    def __init__(self, collection_name: str, conn: MongoConnection = MongoConnection()) -> None:
         self.collection_name = collection_name
         self.conn = conn
         self.model = HandshakeRepoT1Model
+
+    def connect(self) -> None:
+        self.conn.connect()
+
+    def close(self) -> None:
+        self.conn.close()
 
     def insert(self, job_id: int, role: str, url: str) -> ObjectId:
         collection = self.conn.get_collection(self.collection_name)
