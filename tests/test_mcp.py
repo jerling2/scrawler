@@ -6,7 +6,8 @@ from source import (
     MCPScrawlerModel,
     MCPHandshakeExtractor1Model,
     MCPHandshakeTransfomer1Model,
-    MCPHandshakeExtractor2Model
+    MCPHandshakeExtractor2Model,
+    MCPHandshakeTransfomer2Model
 )
 
 @pytest.fixture()
@@ -65,6 +66,19 @@ def test_mcp_hse2_model(signal_alarm_handler):
     UNTIL_PREEMPT = 30
     original_handler = signal.signal(signal.SIGALRM, signal_alarm_handler)
     mcp = MainControlProgram(MCPHandshakeExtractor2Model())
+    signal.alarm(UNTIL_PREEMPT)
+    try:
+        mcp.run()
+    except:
+        raise
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, original_handler)
+
+def test_mcp_hst2_model(signal_alarm_handler):
+    UNTIL_PREEMPT = 30
+    original_handler = signal.signal(signal.SIGALRM, signal_alarm_handler)
+    mcp = MainControlProgram(MCPHandshakeTransfomer2Model())
     signal.alarm(UNTIL_PREEMPT)
     try:
         mcp.run()

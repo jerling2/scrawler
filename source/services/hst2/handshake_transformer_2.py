@@ -19,9 +19,9 @@ class HandshakeTransformer2:
 
     def __init__(
         self, 
-        config: HandshakeTransformer2Config,
         broker: InterProcessGateway,
-        repo: HandshakeRepoT2
+        repo: HandshakeRepoT2,
+        config: HandshakeTransformer2Config = HandshakeTransformer2Config()
     ) -> None:
         self.config = config
         self.broker = broker

@@ -6,12 +6,12 @@ from source.broker import (
     KafkaConsumerConfig,
     KafkaProducerConfig,
 )
-from source.database import HandshakeRepoE2
-from source.services import HandshakeExtractor2
+from source.database import HandshakeRepoT2
+from source.services import HandshakeTransformer2
 
 
 @dataclass(frozen=True)
-class MCPHandshakeExtractor2Model(MCPIterface):
+class MCPHandshakeTransfomer2Model(MCPIterface):
     LISTEN_INTERVAL_SECONDS = 1
     BROKER = InterProcessGateway(
         config=KafkaConnectionConfig(
@@ -21,8 +21,8 @@ class MCPHandshakeExtractor2Model(MCPIterface):
             ),
         )
     )
-    REPO = HandshakeRepoE2('raw.handshake.job.stage2')
-    TRANSFORMER = HandshakeExtractor2(
+    REPO = HandshakeRepoT2('staged.handshake.job.stage2')
+    TRANSFORMER = HandshakeTransformer2(
         broker=BROKER,
         repo=REPO,
     )

@@ -2,5 +2,6 @@ from .scrawler_mcp_model import MCPScrawlerModel
 from .mcp_handshake_extractor_1_model import MCPHandshakeExtractor1Model
 from .mcp_handshake_transformer_1_model import MCPHandshakeTransfomer1Model
 from .mcp_handshake_extractor_2_model import MCPHandshakeExtractor2Model
+from .mcp_handshake_transformer_2_model import MCPHandshakeTransfomer2Model
 
-__all__ = ['MCPScrawlerModel', 'MCPHandshakeExtractor1Model', 'MCPHandshakeTransfomer1Model', 'MCPHandshakeExtractor2Model']
+__all__ = ['MCPScrawlerModel', 'MCPHandshakeExtractor1Model', 'MCPHandshakeTransfomer1Model', 'MCPHandshakeExtractor2Model', 'MCPHandshakeTransfomer2Model']

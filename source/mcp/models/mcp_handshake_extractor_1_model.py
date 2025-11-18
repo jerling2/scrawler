@@ -21,7 +21,7 @@ class MCPHandshakeExtractor1Model(MCPIterface):
             ),
         )
     )
-    REPO = HandshakeRepoE1('extract.handshake.job.stage1')
+    REPO = HandshakeRepoE1('raw.handshake.job.stage1')
     EXTRACTOR = HandshakeExtractor1(
         broker=BROKER,
         repo=REPO,

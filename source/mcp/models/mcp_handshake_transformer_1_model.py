@@ -21,7 +21,7 @@ class MCPHandshakeTransfomer1Model(MCPIterface):
             ),
         )
     )
-    REPO = HandshakeRepoT1('raw.handshake.job.stage1')
+    REPO = HandshakeRepoT1('staged.handshake.job.stage1')
     TRANSFORMER = HandshakeTransformer1(
         broker=BROKER,
         repo=REPO,
