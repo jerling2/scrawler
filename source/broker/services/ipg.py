@@ -68,10 +68,14 @@ class InterProcessGateway:
     def emit(self):
         self.broker_producer.poll(0)
 
+    def flush(self, timeout: int) -> int:
+        num_remaining_messages = self.broker_producer.flush(timeout=timeout)
+        return num_remaining_messages
+
     def close(self):
     
         def close_producer():
-            remaining_messages = self.broker_producer.flush(timeout=10)
+            remaining_messages = self.flush(10)
             if remaining_messages != 0:
                 # Warning: some messages were not delivered and lost.
                 pass
