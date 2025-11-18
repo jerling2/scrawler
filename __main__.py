@@ -34,7 +34,7 @@ from source import (
 )
 
 
-SEND_E1_CMD = True
+SEND_E1_CMD = False
 DEV_BROKER = InterProcessGateway(KafkaConnectionConfig(producer_config=KafkaProducerConfig.from_env()))
 E1_MSG = HandshakeExtractor1Codec(start_page=1, end_page=5, per_page=50)
 
