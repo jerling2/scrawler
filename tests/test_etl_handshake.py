@@ -134,6 +134,10 @@ def cmd_e1():
     )
     return (HandshakeExtractor1Codec, HandshakeExtractor1Codec.TOPIC, message)
 
+def test_send_e1_cmd(cmd_e1, broker):
+    broker.send(*cmd_e1)
+    broker.broker_producer.flush(timeout=10)
+
 
 def test_pipeline_full(e1, t1, e2, t2, broker, mcp, cmd_e1):
     SECONDS_UNTIL_PREEMPT = 60 #< this is how long the consumers will listen for messages

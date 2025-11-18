@@ -11,7 +11,7 @@ from source.services import HandshakeTransformer1
 
 
 @dataclass(frozen=True)
-class MCPHandshakeTransfomer1Model(MCPIterface):
+class MCPHandshakeTransformer1Model(MCPIterface):
     LISTEN_INTERVAL_SECONDS = 1
     BROKER = InterProcessGateway(
         config=KafkaConnectionConfig(

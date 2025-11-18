@@ -5,9 +5,10 @@ from source import (
     MainControlProgram, 
     MCPScrawlerModel,
     MCPHandshakeExtractor1Model,
-    MCPHandshakeTransfomer1Model,
+    MCPHandshakeTransformer1Model,
     MCPHandshakeExtractor2Model,
-    MCPHandshakeTransfomer2Model
+    MCPHandshakeTransformer2Model,
+    MCPHandshakeETLModel
 )
 
 @pytest.fixture()
@@ -52,7 +53,7 @@ def test_mcp_hse1_model(signal_alarm_handler):
 def test_mcp_hst1_model(signal_alarm_handler):
     UNTIL_PREEMPT = 30
     original_handler = signal.signal(signal.SIGALRM, signal_alarm_handler)
-    mcp = MainControlProgram(MCPHandshakeTransfomer1Model())
+    mcp = MainControlProgram(MCPHandshakeTransformer1Model())
     signal.alarm(UNTIL_PREEMPT)
     try:
         mcp.run()
@@ -78,7 +79,20 @@ def test_mcp_hse2_model(signal_alarm_handler):
 def test_mcp_hst2_model(signal_alarm_handler):
     UNTIL_PREEMPT = 30
     original_handler = signal.signal(signal.SIGALRM, signal_alarm_handler)
-    mcp = MainControlProgram(MCPHandshakeTransfomer2Model())
+    mcp = MainControlProgram(MCPHandshakeTransformer2Model())
+    signal.alarm(UNTIL_PREEMPT)
+    try:
+        mcp.run()
+    except:
+        raise
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, original_handler)
+
+def test_mcp_etl_model(signal_alarm_handler):
+    UNTIL_PREEMPT = 60
+    original_handler = signal.signal(signal.SIGALRM, signal_alarm_handler)
+    mcp = MainControlProgram(MCPHandshakeETLModel())
     signal.alarm(UNTIL_PREEMPT)
     try:
         mcp.run()
