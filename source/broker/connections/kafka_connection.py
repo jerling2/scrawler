@@ -4,9 +4,9 @@ from typing import Optional, Any
 from dataclasses import dataclass, field, asdict
 from confluent_kafka import (
     Consumer as KafkaConsumer, 
-    Producer as KafkaProducer
+    Producer as KafkaProducer,
 )
-import confluent_kafka
+from confluent_kafka.admin import AdminClient as KafkaAdmin
 
 
 # Refer to the official documentation for the librdkafka library for all, up-to-date, configuration properties.
@@ -15,16 +15,26 @@ import confluent_kafka
 class KafkaConnectionConfig:
     consumer_config: Optional[KafkaConsumerConfig] = None
     producer_config: Optional[KafkaProducerConfig] = None
+    admin_config: Optional[KafkaAdminConfig] = None
 
-    def get_consumer(self) -> confluent_kafka.Consumer:
+    def get_consumer(self) -> Optional[KafkaConsumer]:
         if self.consumer_config is None:
             return
         return KafkaConsumer(self.consumer_config.as_dict())
     
-    def get_producer(self) -> confluent_kafka.Producer:
+    def get_producer(self) -> Optional[KafkaProducer]:
         if self.producer_config is None:
             return
         return KafkaProducer(self.producer_config.as_dict())
+    
+    def get_admin(self) -> Optional[KafkaAdmin]:
+        if self.admin_config is None:
+            return
+        return KafkaAdmin(self.admin_config.as_dict())
+
+
+def get_kafka_admin(admin_config: KafkaAdminConfig):
+    return KafkaAdmin(admin_config.as_dict())
 
 
 @dataclass(frozen=True)
@@ -109,3 +119,28 @@ class KafkaProducerConfig:
             for key, value in asdict(self).items() 
             if value is not None
         }
+
+@dataclass(frozen=True)
+class KafkaAdminConfig:
+    bootstrap_servers: str = field(
+        metadata={
+            'description': 'Initial list of Kafka brokers (HOST:PORT) the client uses to discover the full cluster', 
+            'required': True
+        }
+    )
+
+    @classmethod
+    def from_env(cls, **kwargs) -> KafkaAdminConfig:
+        return KafkaAdminConfig(
+            bootstrap_servers=os.environ['KAFKA_BOOSTRAP_SERVERS'],
+            **kwargs
+        )
+    
+    def as_dict(self) -> dict[str, Any]:
+        return \
+        {
+            key.replace('_', '.'): value 
+            for key, value in asdict(self).items() 
+            if value is not None
+        }
+    

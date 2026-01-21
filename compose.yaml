@@ -103,6 +103,15 @@ services:
     environment:
       KAFKA_LOG_DIRS: /opt/kafka/data
 
+      # Prohibit Automatic Provisioning of Topics
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+
+      # Global message retention
+      KAFKA_LOG_RETENTION_MS: ${KAFKA_TOPIC_RETENTION_MS}
+      
+      # Global segment rolling (time-based)
+      KAFKA_LOG_ROLL_MS: ${KAFKA_TOPIC_SEGMENT_MS}
+
       # Bind and listen for controller (kafka), host, and docker traffic.
       KAFKA_LISTENERS: CONTROLLER://localhost:9091,HOST://0.0.0.0:9092,DOCKER://0.0.0.0:9093
       KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,DOCKER://kafka:9093
@@ -119,6 +128,10 @@ services:
       
       # Required for a single node cluster
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+      # This influences the resource contention of a topic.
+      # Effectively caps num of parallel consumers for a topic.
+      KAFKA_NUM_PARTITIONS: ${KAFKA_TOPIC_NUM_PARTITIONS}
 
   kafka-ui:
     image: kafbat/kafka-ui:main

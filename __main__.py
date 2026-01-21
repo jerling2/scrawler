@@ -24,15 +24,25 @@ HSE2 is designed to empty its buffer, that holds 50 target urls, before
 it is allowed to shutdown. This optimization traded shutdown speed for
 runtime speed. Speeding up preemption for HSE2 is on the todo list.
 """
+import time
 from source import (
     MainControlProgram,
     MCPHandshakeETLModel,
     HandshakeExtractor1Codec,
     InterProcessGateway,
+    KafkaTopicManager,
     KafkaConnectionConfig, 
-    KafkaProducerConfig
+    KafkaProducerConfig,
+    get_kafka_admin,
+    KafkaAdminConfig,
+    get_topic_hsl,
+    get_topic_hse1,
+    get_topic_hse2,
+    get_topic_hst1,
+    get_topic_hst2,
 )
 
+ADMIN_CONN = get_kafka_admin(KafkaAdminConfig.from_env())
 
 SEND_E1_CMD = False
 DEV_BROKER = InterProcessGateway(KafkaConnectionConfig(producer_config=KafkaProducerConfig.from_env()))
@@ -40,6 +50,19 @@ E1_MSG = HandshakeExtractor1Codec(start_page=1, end_page=5, per_page=50)
 
 
 if __name__ == "__main__":
+
+    topics = [get_topic_hse1(), get_topic_hse2(), get_topic_hst1(), get_topic_hst2(), get_topic_hsl()]
+    topic_manager = KafkaTopicManager(ADMIN_CONN)
+    topic_manager.create_topics(topics)
+    
+    MAX_ATTEMPTS = 5
+    poll_attempts = 0
+    while not topic_manager.verify_topic_existence([t.topic for t in topics]) and poll_attempts < MAX_ATTEMPTS:
+        time.sleep(2)
+        poll_attempts += 1
+    
+    if poll_attempts > MAX_ATTEMPTS:
+        raise Exception("Failed to initialize topics")
 
     if SEND_E1_CMD:
         # For development, manually set SEND_E1_CMD to kickoff the etl pipeline.
