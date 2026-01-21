@@ -48,7 +48,7 @@ class HandshakeRawDataContainer:
     @return_none_on_attribute_error
     def get_about(self) -> str | None:
         """ Orients around 'at a glance' title to navigate to the about section. """
-        return self.soup.find('h4', string="At a glance").parent.parent.find_next_sibling('div').div.div.decode_contents()
+        return self.soup.find('h3', string="At a glance").parent.parent.find_next_sibling('div').div.div.decode_contents()
         
     @return_none_on_attribute_error
     def get_apply_type(self) -> str | None:
