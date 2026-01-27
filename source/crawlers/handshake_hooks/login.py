@@ -12,7 +12,7 @@ def handshake_login_hook(login_url: str, username: str, password: str, session_s
         await page.get_by_role('button', name='Next').click()
         await page.get_by_role('link', name='Log in another way').click()
         await page.get_by_role('textbox', name='Password').fill(password)
-        await page.get_by_role('button', name='submit').click()
+        await page.get_by_role('button', name='Log in').click()
         await page.get_by_role('button', name='Open profile options').wait_for(state="visible")
         await context.storage_state(path=session_storage)
         return page
