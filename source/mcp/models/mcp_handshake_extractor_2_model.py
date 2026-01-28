@@ -6,13 +6,14 @@ from source.broker import (
     KafkaConsumerConfig,
     KafkaProducerConfig,
 )
-from source.database import HandshakeRepoE2
+from source.database import HandshakeLake
 from source.services import HandshakeExtractor2
 
 
 @dataclass(frozen=True)
 class MCPHandshakeExtractor2Model(MCPIterface):
     LISTEN_INTERVAL_SECONDS = 1
+    REPO = HandshakeLake('handshake')
     BROKER = InterProcessGateway(
         config=KafkaConnectionConfig(
             producer_config=KafkaProducerConfig.from_env(),
@@ -21,18 +22,18 @@ class MCPHandshakeExtractor2Model(MCPIterface):
             ),
         )
     )
-    REPO = HandshakeRepoE2('raw.handshake.job.stage2')
-    TRANSFORMER = HandshakeExtractor2(
-        broker=BROKER,
-        repo=REPO,
+    EXTRACTOR = HandshakeExtractor2(
+        broker=BROKER, 
+        repo=REPO
     )
 
     def setup(self):
         self.REPO.connect()
-        self.BROKER.set_consumers([self.TRANSFORMER.consumer_info])
+        self.BROKER.set_consumers([self.EXTRACTOR.consumer_info])
     
     def teardown(self):
         self.BROKER.close()
+        self.EXTRACTOR.shutdown()
     
     def run_loop(self):
         while not self.BROKER.is_closed:

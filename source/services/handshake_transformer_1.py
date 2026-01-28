@@ -6,7 +6,7 @@ from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, JsonCssEx
 from source.broker import InterProcessGateway, IPGConsumer
 from source.codec import HandshakeTransformer1Codec, HandshakeExtractor2Codec
 from source.crawlers import CrawlerFactory, CrawlerFactoryConfig
-from source.database import HandshakeRepoT1
+from source.database import HandshakeLake
 
 
 @dataclass
@@ -30,7 +30,7 @@ class HandshakeTransformer1:
     def __init__(
         self, 
         broker: InterProcessGateway,
-        repo: HandshakeRepoT1,
+        repo: HandshakeLake,
         config: HandshakeTransformer1Config = HandshakeTransformer1Config()
     ) -> None:
         self.config = config
@@ -112,10 +112,13 @@ class HandshakeTransformer1:
         await self.crawler.close()
         if not result.success:
             return
-        messages = self.process(result.extracted_content)
-        self.repo.insert_many([
-            (msg.job_id, msg.role, msg.url) 
-            for msg in messages
+        job_data = self.process(result.extracted_content)
+        upserted_ind = self.repo.upsert_job_postings([
+            (i.job_id, i.role, i.url) 
+            for i in job_data
         ])
+
+        messages = [job_data[i] for i in upserted_ind]
+
         for msg in messages:
             self.broker.send(HandshakeExtractor2Codec, HandshakeExtractor2Codec.TOPIC, msg)

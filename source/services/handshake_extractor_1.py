@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from crawl4ai import BrowserConfig, CrawlerRunConfig, CacheMode, AsyncWebCrawler, MemoryAdaptiveDispatcher, RateLimiter
 from source.broker import InterProcessGateway, IPGConsumer
-from source.database import HandshakeRepoE1
 from source.codec import HandshakeExtractor1Codec, HandshakeTransformer1Codec
 from source.crawlers.base import CrawlerFactory, CrawlerFactoryConfig
 from source.crawlers import handshake_extractor_1_hook
@@ -39,12 +38,10 @@ class HandshakeExtractor1:
     def __init__(
         self, 
         broker: InterProcessGateway, 
-        repo: HandshakeRepoE1,
         config: HandshakeExtractor1Config = HandshakeExtractor1Config(),
     ):
         self.config = config
         self.broker = broker
-        self.repo = repo
         self.auth = config.get_auth()
         self.crawler = config.get_crawler()
 
@@ -78,12 +75,9 @@ class HandshakeExtractor1:
         )
         await self.auth.login()
         async for result in await self.crawler.arun_many(urls, run_config, dispatcher):
-            if result.success:
-                self.push_to_repo(result.url, result.html)
-                self.propogate_message(result.html)
-
-    def push_to_repo(self, url: str, html: str):
-        self.repo.insert(url, html)
+            if not result.success:
+                continue
+            self.propogate_message(result.html)
     
     def propogate_message(self, html: str):
         message = HandshakeTransformer1Codec(html)

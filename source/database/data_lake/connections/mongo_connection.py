@@ -44,14 +44,18 @@ class MongoConnection:
     def connect(self):
         if self.client is None:
             self.client = MongoClient(self.config.uri)
-        
+    
     def close(self):
         if self.client is not None:
             self.client.close()
         self.client = None
 
     def get_database(self):
+        if not self.client:
+            raise RuntimeError("You must call .connect() before accessing collections.")
         return self.client.get_default_database()
     
     def get_collection(self, collection_name: str):
+        if not self.client:
+            raise RuntimeError("You must call .connect() before accessing collections.")
         return self.client.get_default_database()[collection_name]

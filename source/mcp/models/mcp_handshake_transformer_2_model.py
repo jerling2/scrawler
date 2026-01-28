@@ -6,7 +6,7 @@ from source.broker import (
     KafkaConsumerConfig,
     KafkaProducerConfig,
 )
-from source.database import HandshakeRepoT2
+from source.database import HandshakeLake
 from source.services import HandshakeTransformer2
 
 
@@ -21,7 +21,7 @@ class MCPHandshakeTransformer2Model(MCPIterface):
             ),
         )
     )
-    REPO = HandshakeRepoT2('staged.handshake.job.stage2')
+    REPO = HandshakeLake('handshake')
     TRANSFORMER = HandshakeTransformer2(
         broker=BROKER,
         repo=REPO,

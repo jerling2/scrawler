@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from source.utilities import Stock
 from source.broker import InterProcessGateway, IPGConsumer
 from source.codec import HandshakeTransformer2Codec, HandshakeLoader1Codec
-from source.database import HandshakeRepoT2
+from source.database import HandshakeLake
 from source.services.hst2.raw import HandshakeRawDataContainer
 from source.services.hst2.clean import HandshakeCleanDataContainer
 
@@ -20,7 +20,7 @@ class HandshakeTransformer2:
     def __init__(
         self, 
         broker: InterProcessGateway,
-        repo: HandshakeRepoT2,
+        repo: HandshakeLake,
         config: HandshakeTransformer2Config = HandshakeTransformer2Config()
     ) -> None:
         self.config = config
@@ -54,5 +54,5 @@ class HandshakeTransformer2:
         stock = Stock(clean_data)
         message_props = stock.collect(HandshakeLoader1Codec.Props)
         message = HandshakeLoader1Codec(**message_props)
-        self.repo.insert(clean_data)
+        self.repo.upsert_enriched_job_data(clean_data)
         self.broker.send(HandshakeLoader1Codec, HandshakeLoader1Codec.TOPIC, message)

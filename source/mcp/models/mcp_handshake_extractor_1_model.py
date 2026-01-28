@@ -6,7 +6,6 @@ from source.broker import (
     KafkaConsumerConfig,
     KafkaProducerConfig,
 )
-from source.database import HandshakeRepoE1
 from source.services import HandshakeExtractor1
 
 
@@ -21,14 +20,11 @@ class MCPHandshakeExtractor1Model(MCPIterface):
             ),
         )
     )
-    REPO = HandshakeRepoE1('raw.handshake.job.stage1')
     EXTRACTOR = HandshakeExtractor1(
         broker=BROKER,
-        repo=REPO,
     )
 
     def setup(self):
-        self.REPO.connect()
         self.BROKER.set_consumers([self.EXTRACTOR.consumer_info])
     
     def teardown(self):

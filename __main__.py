@@ -44,7 +44,7 @@ from source import (
 
 ADMIN_CONN = get_kafka_admin(KafkaAdminConfig.from_env())
 
-SEND_E1_CMD = False
+SEND_E1_CMD = True
 DEV_BROKER = InterProcessGateway(KafkaConnectionConfig(producer_config=KafkaProducerConfig.from_env()))
 E1_MSG = HandshakeExtractor1Codec(start_page=1, end_page=5, per_page=50)
 

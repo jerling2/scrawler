@@ -1,7 +1,8 @@
 import os
+import threading
 import asyncio
 import json
-from queue import Queue
+import queue
 from dataclasses import dataclass
 from pathlib import Path
 from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, MemoryAdaptiveDispatcher, RateLimiter, CacheMode, JsonCssExtractionStrategy
@@ -9,7 +10,7 @@ from source.crawlers import CrawlerFactory, CrawlerFactoryConfig, handshake_extr
 from source.services.handshake_auth import HandshakeAuth, HandshakeAuthConfig
 from source.codec import HandshakeExtractor2Codec, HandshakeTransformer2Codec
 from source.broker import InterProcessGateway, IPGConsumer
-from source.database import HandshakeRepoE2
+from source.database import HandshakeLake
 
 
 @dataclass(frozen=True)
@@ -18,6 +19,7 @@ class HandshakeExtractor2Config:
     CODEC = HandshakeExtractor2Codec
     SESSION_NAME = 'handshake_e2'
     MSG_BUF_SIZE = 100
+    MSG_BUF_TIMEOUT = 30
 
     def get_auth(self) -> HandshakeAuth:
         return HandshakeAuth(HandshakeAuthConfig.from_env(session_name=self.SESSION_NAME))
@@ -38,7 +40,7 @@ class HandshakeExtractor2:
 
     def __init__(self,
             broker: InterProcessGateway,
-            repo: HandshakeRepoE2,
+            repo: HandshakeLake,
             config: HandshakeExtractor2Config = HandshakeExtractor2Config()
         ):
         self.config = config
@@ -46,7 +48,14 @@ class HandshakeExtractor2:
         self.auth = config.get_auth()
         self.broker = broker
         self.repo = repo
-        self.msg_buf = Queue()
+        self.msg_buf = queue.Queue()  #< Thread-safe
+        self.buf_size = config.MSG_BUF_SIZE
+        self.buf_timeout = config.MSG_BUF_TIMEOUT
+        self._buf_event = threading.Event()
+        self._worker = threading.Thread(target=self._worker, daemon=True)
+        self._worker.start()
+        self._worker_stop_event = threading.Event()
+        self._worker_closed_event = threading.Event()
 
     @property
     def consumer_info(self) -> IPGConsumer:
@@ -69,25 +78,37 @@ class HandshakeExtractor2:
 
     def on_notify(self, message: HandshakeExtractor2Codec):
         self.msg_buf.put(message)
-        if self.msg_buf.qsize() >= self.config.MSG_BUF_SIZE:
-            self.flush()
+        if self.msg_buf.qsize() >= self.buf_size:
+            self._buf_event.set()
 
-    def flush(self):
-        extract_bucket = []
-        dead_letter_bucket = []
-        while self.msg_buf.qsize():
-            message = self.msg_buf.get()
-            match message.action:
-                case 'START_EXTRACT':
-                    extract_bucket.append(message)
-                case _:
-                    dead_letter_bucket.append(message)
-        if (num_dead_letters := len(dead_letter_bucket)) > 0:
-            print(f'Warning: caught {num_dead_letters} dead lettters')
-        if len(extract_bucket) > 0:
-            urls = [msg.url for msg in extract_bucket]
+    def _worker(self):
+        while True:
+            self._buf_event.wait(self.buf_timeout)
+            if not self.msg_buf and self._worker_stop_event.is_set():
+                self._buf_event.clear()
+                break
+            if self.msg_buf.qsize() == 0:
+                # Using qsize opens a risk of race condition. Though, a race condition won't cause 
+                # damage because the system will process the queue in time (regardless).
+                self._buf_event.clear()
+                continue
+            batch = []
+            while True:
+                try:
+                    batch.append(self.msg_buf.get_nowait())
+                except queue.Empty:
+                    break
+            urls = [msg.url for msg in batch]
             asyncio.run(self.extract(urls))
-        
+            self._buf_event.clear()
+            if self._worker_stop_event.is_set():
+                break
+        self._worker_closed_event.set()
+
+    def shutdown(self):
+        self._worker_stop_event.set()
+        self._worker_closed_event.wait()
+
     async def extract(self, urls: list[str]):
         run_config = CrawlerRunConfig(
             stream=True,
@@ -103,13 +124,12 @@ class HandshakeExtractor2:
         async for result in await self.crawler.arun_many(urls, run_config, dispatcher):
             if result.success:
                 html = json.loads(result.extracted_content)[0]['main_html']
-                self.push_to_repo(result.url, html)
                 self.propogate_message(result.url, html)
+                self.repo.set_e2_success(result.url, True)
+            else:
+                self.repo.set_e2_success(result.url, False)
         await self.crawler.close()
         
-    def push_to_repo(self, url: str, html: str):
-        self.repo.insert(url, html)
-    
     def propogate_message(self, url: str, html: str):
         message = HandshakeTransformer2Codec(url, html)
         self.broker.send(HandshakeTransformer2Codec, HandshakeTransformer2Codec.TOPIC, message)
